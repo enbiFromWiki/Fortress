@@ -1,0 +1,11 @@
+https://meta.wikimedia.org/w/rest.php/oauth2/authorize?client_id=a1ccc2fee4803887ae7f39acee5ed81d&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fcallback&response_type=code&scope=basic+edit&state=random-state-string
+
+
+
+
+https://meta.wikimedia.org/w/index.php?title=Special:OAuth/approve&returnto=%2Fw%2Frest.php%2Foauth2%2Fauthorize&returntoquery=client_id%3D27ee1657aec0343a25d19a0a8afd5ec6%26response_type%3Dcode%26state%3D4a89bc1a-0643-4a80-8f06-5153b49a714a&client_id=27ee1657aec0343a25d19a0a8afd5ec6&oauth_version=2&scope=basic+highvolume+editpage+editprotected+createeditmovepage+rollback
+
+
+WORKING: https://meta.wikimedia.org/w/index.php?title=Special:OAuth/approve&returnto=%2Fw%2Frest.php%2Foauth2%2Fauthorize&returntoquery=client_id%3D27ee1657aec0343a25d19a0a8afd5ec6%26response_type%3Dcode%26state%3Dabdd0828-9bf5-46df-a46b-d956bb23948a&client_id=c873b63b13b3aafdbcebe29eb273e83d&oauth_version=2&scope=basic+highvolume+editpage+editprotected+createeditmovepage+rollback
+
+FAIL: https://meta.wikimedia.org/w/rest.php/oauth2/authorize?client_id=c873b63b13b3aafdbcebe29eb273e83d&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fcallback&response_type=code&scope=basic+editpage+rollback&state=random-state-string&oauth_version=2
