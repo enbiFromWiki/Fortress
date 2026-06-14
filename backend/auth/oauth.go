@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
+
+	// "net/url"
 	"os"
-	"strings"
+	// "strings"
 	"time"
 
 	"crypto/rand"
@@ -18,6 +19,15 @@ import (
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 )
+
+var httpc = &http.Client{
+	Transport: &uaTransport{
+		base: http.DefaultTransport,
+		ua:   "User:enbi/OAuth Testing (localhost dev)",
+	},
+}
+
+var ctx = context.WithValue(context.Background(), oauth2.HTTPClient, httpc)
 
 type MWOauth struct {
 	config *oauth2.Config
@@ -74,10 +84,7 @@ type Session struct {
 
 func generateRandomCode() (string, error) {
 	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
+	rand.Read(b)
 
 	output := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(b)
 
@@ -97,34 +104,37 @@ func Login(c *gin.Context) {
 }
 
 func (a *MWOauth) getToken(code string) (*oauth2.Token, error) {
-	data := url.Values{}
-	data.Set("grant_type", "authorization_code")
-	data.Set("code", code)
-	data.Set("redirect_uri", a.config.RedirectURL)
-
-	req, _ := http.NewRequest(
-		"POST",
-		a.config.Endpoint.TokenURL,
-		strings.NewReader(data.Encode()),
-	)
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("User-Agent", a.ua)
-
-	req.SetBasicAuth(a.config.ClientID, a.config.ClientSecret)
-
-	client := &http.Client{}
-	res, err := client.Do(req)
+	token, err := oauthConfig.Exchange(ctx, code)
 	if err != nil {
 		return nil, err
 	}
+	// data.Set("grant_type", "authorization_code")
+	// data.Set("code", code)
+	// data.Set("redirect_uri", a.config.RedirectURL)
 
-	defer res.Body.Close()
-	var token oauth2.Token
+	// req, _ := http.NewRequest(
+	// 	"POST",
+	// 	a.config.Endpoint.TokenURL,
+	// 	strings.NewReader(data.Encode()),
+	// )
 
-	json.NewDecoder(res.Body).Decode(&token)
+	// req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	// req.Header.Set("User-Agent", a.ua)
 
-	return &token, nil
+	// req.SetBasicAuth(a.config.ClientID, a.config.ClientSecret)
+
+	// client := &http.Client{}
+	// res, err := client.Do(req)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// defer res.Body.Close()
+	// var token oauth2.Token
+
+	// json.NewDecoder(res.Body).Decode(&token)
+
+	return token, nil
 }
 
 func Callback(c *gin.Context) {
@@ -197,14 +207,12 @@ func ApiTest(c *gin.Context) {
 		return
 	}
 
-	client := &http.Client{
-		Transport: &uaTransport{
-			base: http.DefaultTransport,
-			ua:   "User:enbi/OAuth Testing (localhost dev)",
-		},
-	}
-
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, client)
+	// client := &http.Client{
+	// 	Transport: &uaTransport{
+	// 		base: http.DefaultTransport,
+	// 		ua:   "User:enbi/OAuth Testing (localhost dev)",
+	// 	},
+	// }
 
 	ts := oauthConfig.TokenSource(ctx, tok)
 
@@ -215,6 +223,10 @@ func ApiTest(c *gin.Context) {
 		})
 		return
 	}
+
+	cookieData, _ := json.Marshal(token)
+
+	c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
 
 	req, _ := http.NewRequest("GET", "https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile", nil)
 
