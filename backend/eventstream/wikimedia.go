@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"gateway/backend/util"
 	"log"
 	"net/http"
 	"strings"
@@ -14,9 +15,8 @@ func StartWMStream() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := &http.Client{}
-	req.Header.Set("User-Agent", "User:enbi's test script in Go")
-	res, err := client.Do(req)
+	client := util.DefaultClient
+	res, err := client.DoWithUA(req)
 	if err != nil {
 		log.Fatal(err)
 	}

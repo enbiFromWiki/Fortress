@@ -21,6 +21,7 @@ func main() {
 	r.GET("/login", auth.Login)
 	r.GET("/auth/callback", auth.Callback)
 	r.GET("/call", auth.ApiTest)
+	r.GET("/call2", auth.ApiTest2)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.File("./frontend/dist/index.html")

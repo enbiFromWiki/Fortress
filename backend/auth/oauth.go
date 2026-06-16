@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"gateway/backend/util"
 	"io"
 	"net/http"
 
@@ -27,6 +29,13 @@ var httpc = &http.Client{
 	},
 }
 
+type JWT struct {
+	Username     string
+	AccessToken  string
+	RefreshToken string
+	Expiry       time.Time
+}
+
 var ctx = context.WithValue(context.Background(), oauth2.HTTPClient, httpc)
 
 type MWOauth struct {
@@ -34,20 +43,6 @@ type MWOauth struct {
 	ua     string
 }
 
-//	var oauthConfig = &oauth2.Config{
-//		ClientID:     os.Getenv("CLIENT_ID"),
-//		ClientSecret: os.Getenv("CLIENT_SECRET"),
-//		RedirectURL:  "http://localhost:8080/auth/callback",
-//		Scopes: []string{
-//			"basic",
-//			"editpage",
-//			"rollback",
-//		},
-//		Endpoint: oauth2.Endpoint{
-//			AuthURL:  "https://meta.wikimedia.org/w/rest.php/oauth2/authorize",
-//			TokenURL: "https://meta.wikimedia.org/w/rest.php/oauth2/access_token",
-//		},
-//	}
 var oauthConfig *oauth2.Config
 var authenticator *MWOauth
 
@@ -103,38 +98,44 @@ func Login(c *gin.Context) {
 	c.Redirect(302, url)
 }
 
-func (a *MWOauth) getToken(code string) (*oauth2.Token, error) {
+func (a *MWOauth) getToken(code string) (*JWT, error) {
 	token, err := oauthConfig.Exchange(ctx, code)
+	client := util.DefaultClient
+
+	data, err := client.Get(map[string]string{
+		"action": "query",
+		"meta":   "userinfo",
+	}, token.AccessToken)
+
 	if err != nil {
 		return nil, err
 	}
-	// data.Set("grant_type", "authorization_code")
-	// data.Set("code", code)
-	// data.Set("redirect_uri", a.config.RedirectURL)
 
-	// req, _ := http.NewRequest(
-	// 	"POST",
-	// 	a.config.Endpoint.TokenURL,
-	// 	strings.NewReader(data.Encode()),
-	// )
+	query, ok := data["query"].(map[string]any)
+	if !ok {
+		return nil, errors.New("Unexpected MediaWiki API response")
+	}
+	userinfo, ok := query["userinfo"].(map[string]any)
+	if !ok {
+		return nil, errors.New("Unexpected MediaWiki API response")
+	}
+	name, ok := userinfo["name"]
+	if !ok {
+		return nil, errors.New("Unexpected MediaWiki API response")
+	}
+	nameStr, ok := name.(string)
+	if !ok {
+		return nil, errors.New("Non-string username.")
+	}
 
-	// req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	// req.Header.Set("User-Agent", a.ua)
+	jwt := JWT{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+		Username:     nameStr,
+	}
 
-	// req.SetBasicAuth(a.config.ClientID, a.config.ClientSecret)
-
-	// client := &http.Client{}
-	// res, err := client.Do(req)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// defer res.Body.Close()
-	// var token oauth2.Token
-
-	// json.NewDecoder(res.Body).Decode(&token)
-
-	return token, nil
+	return &jwt, nil
 }
 
 func Callback(c *gin.Context) {
@@ -151,8 +152,6 @@ func Callback(c *gin.Context) {
 		c.String(500, "Token exchange failed: %t", err.Error())
 		return
 	}
-
-	fmt.Printf("TOKEN::: %d", token.ExpiresIn)
 
 	data, _ := json.Marshal(token)
 
@@ -171,20 +170,6 @@ func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func ApiTest(c *gin.Context) {
-	// token := c.Query("token")
-	// client := oauthConfig.Client(context.Background(), &oauth2.Token{
-	// 	AccessToken: token,
-	// })
-
-	// res, err := client.Get("https://test/wikipedia.org/w/api.php?action=query&meta=tokens")
-	// if err != nil {
-	// 	c.String(http.StatusInternalServerError, "Failed to get CSRF token: %t", err)
-	// }
-
-	// c.JSON(200, gin.H{
-	// 	"status":   "success",
-	// 	"response": res,
-	// })
 	cookie, err := c.Cookie("oauth_tokens")
 
 	if err != nil {
@@ -195,9 +180,9 @@ func ApiTest(c *gin.Context) {
 		return
 	}
 
-	tok := &oauth2.Token{}
+	jwt := &JWT{}
 
-	err = json.Unmarshal([]byte(cookie), tok)
+	err = json.Unmarshal([]byte(cookie), jwt)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"status": "error",
@@ -207,12 +192,11 @@ func ApiTest(c *gin.Context) {
 		return
 	}
 
-	// client := &http.Client{
-	// 	Transport: &uaTransport{
-	// 		base: http.DefaultTransport,
-	// 		ua:   "User:enbi/OAuth Testing (localhost dev)",
-	// 	},
-	// }
+	tok := &oauth2.Token{
+		AccessToken:  jwt.AccessToken,
+		RefreshToken: jwt.RefreshToken,
+		Expiry:       jwt.Expiry,
+	}
 
 	ts := oauthConfig.TokenSource(ctx, tok)
 
@@ -220,6 +204,7 @@ func ApiTest(c *gin.Context) {
 	if err != nil {
 		c.JSON(401, gin.H{
 			"status": "reauth",
+			"error":  fmt.Sprint(err),
 		})
 		return
 	}
@@ -256,4 +241,68 @@ func ApiTest(c *gin.Context) {
 		"status": "success",
 		"data":   data,
 	})
+}
+
+func ApiTest2(c *gin.Context) {
+	cookie, err := c.Cookie("oauth_tokens")
+
+	if err != nil {
+		c.JSON(401, gin.H{
+			"status": "error",
+			"error":  "no oauth2 tokens found",
+		})
+		return
+	}
+
+	jwt := &JWT{}
+
+	err = json.Unmarshal([]byte(cookie), jwt)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Failed to extract json cookies",
+			"cookie": cookie,
+		})
+		return
+	}
+
+	tok := &oauth2.Token{
+		AccessToken:  jwt.AccessToken,
+		RefreshToken: jwt.RefreshToken,
+		Expiry:       jwt.Expiry,
+	}
+
+	fmt.Println(jwt.RefreshToken)
+
+	ts := oauthConfig.TokenSource(ctx, tok)
+
+	token, err := ts.Token()
+	if err != nil {
+		c.JSON(401, gin.H{
+			"status": "reauth",
+			"error":  fmt.Sprint(err),
+		})
+		return
+	}
+
+	cookieData, _ := json.Marshal(token)
+	fmt.Println(cookieData)
+
+	c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
+	client := util.DefaultClient
+	data, err := client.Get(map[string]string{
+		"action": "query",
+		"meta":   "siteinfo",
+		"format": "json",
+	}, token.AccessToken)
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"eror":    "erreur",
+			"trueerr": err,
+		})
+		return
+	}
+
+	c.JSON(200, data)
 }
