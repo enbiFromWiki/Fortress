@@ -209,9 +209,24 @@ func ApiTest(c *gin.Context) {
 		return
 	}
 
-	cookieData, _ := json.Marshal(token)
+	cookieData := &JWT{
+		AccessToken:  token.AccessToken,
+		RefreshToken: tok.RefreshToken,
+		Expiry:       token.Expiry,
+		Username:     jwt.Username,
+	}
 
-	c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
+	fmt.Println(cookieData.RefreshToken)
+
+	//cookieBytes, err := json.Marshal(cookieData)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Failed to marshal JSON cookie",
+		})
+	}
+
+	// c.SetCookie("oauth_tokens", string(cookieBytes), 14*24*60*60, "/", "", true, true)
 
 	req, _ := http.NewRequest("GET", "https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile", nil)
 
