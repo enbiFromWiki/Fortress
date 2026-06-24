@@ -36,14 +36,14 @@ type JWT struct {
 	Expiry       time.Time
 }
 
-var ctx = context.WithValue(context.Background(), oauth2.HTTPClient, httpc)
+var CTX = context.WithValue(context.Background(), oauth2.HTTPClient, httpc)
 
 type MWOauth struct {
 	config *oauth2.Config
 	ua     string
 }
 
-var oauthConfig *oauth2.Config
+var OAuthConfig *oauth2.Config
 var authenticator *MWOauth
 
 func InitAuth() {
@@ -51,7 +51,7 @@ func InitAuth() {
 	if err != nil {
 		panic("no .env found.")
 	}
-	oauthConfig = &oauth2.Config{
+	OAuthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
 		RedirectURL:  "http://localhost:8080/auth/callback",
@@ -66,9 +66,17 @@ func InitAuth() {
 		},
 	}
 	authenticator = &MWOauth{
-		config: oauthConfig,
+		config: OAuthConfig,
 		ua:     "User:enbi/OAuth Testing (localhost dev)",
 	}
+}
+
+type CSRF struct {
+	Query struct {
+		Tokens struct {
+			Csrftoken string `json:"csrftoken"`
+		} `json:"tokens"`
+	} `json:"query"`
 }
 
 type Session struct {
@@ -93,13 +101,12 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	url := oauthConfig.AuthCodeURL(state) + "&oauth_version=2"
-	fmt.Println(url)
+	url := OAuthConfig.AuthCodeURL(state) + "&oauth_version=2"
 	c.Redirect(302, url)
 }
 
 func (a *MWOauth) getToken(code string) (*JWT, error) {
-	token, err := oauthConfig.Exchange(ctx, code)
+	token, err := OAuthConfig.Exchange(CTX, code)
 	client := util.DefaultClient
 
 	data, err := client.Get(map[string]string{
@@ -107,11 +114,15 @@ func (a *MWOauth) getToken(code string) (*JWT, error) {
 		"meta":   "userinfo",
 	}, token.AccessToken)
 
+	var realData map[string]any
+
+	_ = json.Unmarshal(data, &realData)
+
 	if err != nil {
 		return nil, err
 	}
 
-	query, ok := data["query"].(map[string]any)
+	query, ok := realData["query"].(map[string]any)
 	if !ok {
 		return nil, errors.New("Unexpected MediaWiki API response")
 	}
@@ -156,7 +167,7 @@ func Callback(c *gin.Context) {
 	data, _ := json.Marshal(token)
 
 	c.SetCookie("oauth_tokens", string(data), 14*24*60*60, "/", "", true, true)
-	c.Redirect(302, "/")
+	c.Redirect(302, "/main")
 }
 
 type uaTransport struct {
@@ -198,7 +209,7 @@ func ApiTest(c *gin.Context) {
 		Expiry:       jwt.Expiry,
 	}
 
-	ts := oauthConfig.TokenSource(ctx, tok)
+	ts := OAuthConfig.TokenSource(CTX, tok)
 
 	token, err := ts.Token()
 	if err != nil {
@@ -216,9 +227,7 @@ func ApiTest(c *gin.Context) {
 		Username:     jwt.Username,
 	}
 
-	fmt.Println(cookieData.RefreshToken)
-
-	//cookieBytes, err := json.Marshal(cookieData)
+	cookieBytes, err := json.Marshal(cookieData)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"status": "error",
@@ -226,7 +235,7 @@ func ApiTest(c *gin.Context) {
 		})
 	}
 
-	// c.SetCookie("oauth_tokens", string(cookieBytes), 14*24*60*60, "/", "", true, true)
+	c.SetCookie("oauth_tokens", string(cookieBytes), 14*24*60*60, "/", "", true, true)
 
 	req, _ := http.NewRequest("GET", "https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile", nil)
 
@@ -287,9 +296,7 @@ func ApiTest2(c *gin.Context) {
 		Expiry:       jwt.Expiry,
 	}
 
-	fmt.Println(jwt.RefreshToken)
-
-	ts := oauthConfig.TokenSource(ctx, tok)
+	ts := OAuthConfig.TokenSource(CTX, tok)
 
 	token, err := ts.Token()
 	if err != nil {
@@ -300,15 +307,41 @@ func ApiTest2(c *gin.Context) {
 		return
 	}
 
-	cookieData, _ := json.Marshal(token)
-	fmt.Println(cookieData)
+	newCookie := &JWT{
+		Username:     jwt.Username,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+	}
+
+	cookieData, _ := json.Marshal(newCookie)
 
 	c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
 	client := util.DefaultClient
-	data, err := client.Get(map[string]string{
+	csrfTokenRes, err := client.Get(map[string]string{
 		"action": "query",
-		"meta":   "siteinfo",
-		"format": "json",
+		"meta":   "tokens",
+	}, token.AccessToken)
+
+	csrfStruct := &CSRF{}
+
+	err = json.Unmarshal(csrfTokenRes, csrfStruct)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Invalid token or bad mediawiki response",
+		})
+		return
+	}
+
+	csrfToken := csrfStruct.Query.Tokens.Csrftoken
+	fmt.Println(string(csrfToken))
+
+	data, err := client.Post(map[string]string{
+		"action":     "edit",
+		"title":      "Test2",
+		"appendtext": "Test",
+		"token":      csrfToken,
 	}, token.AccessToken)
 
 	if err != nil {
@@ -319,5 +352,5 @@ func ApiTest2(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, data)
+	c.JSON(200, string(data))
 }

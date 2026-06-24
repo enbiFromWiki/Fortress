@@ -1,12 +1,12 @@
 * {
-  font-family: sans-serif;
-  color: white;
+    font-family: sans-serif;
+    color: white;
 }
 
 body {
-  background: #111;
+    background: #111;
 }
 
 #data-res {
-  font-family: monospace;
+    font-family: monospace;
 }

@@ -1,11 +1,12 @@
 package util
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type MediaWikiClient struct {
@@ -24,7 +25,11 @@ func (client *MediaWikiClient) DoWithUA(req *http.Request) (*http.Response, erro
 }
 
 func IsOK(res *http.Response) bool {
-	return res.StatusCode >= 200 && res.StatusCode < 300
+	if res.StatusCode >= 200 && res.StatusCode < 300 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func NewClient(ua string, url string) *MediaWikiClient {
@@ -41,7 +46,7 @@ var DefaultClient = &MediaWikiClient{
 	DefaultURL: "https://test.wikipedia.org/w/api.php",
 }
 
-func (client *MediaWikiClient) Get(params map[string]string, token string, serverOverride ...string) (map[string]any, error) {
+func (client *MediaWikiClient) Get(params map[string]string, token string, serverOverride ...string) ([]byte, error) {
 	if len(serverOverride) > 1 {
 		return nil, errors.New("Too many parameters.")
 	}
@@ -62,6 +67,7 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 
 	q := parsedUrl.Query()
 	q.Add("format", "json")
+	q.Add("formatversion", "2")
 
 	for key, val := range params {
 		q.Add(key, val)
@@ -81,12 +87,52 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 	defer res.Body.Close()
 
 	bodyBytes, err := io.ReadAll(res.Body)
-	var output map[string]any
 
-	err = json.Unmarshal(bodyBytes, &output)
+	return bodyBytes, err
+}
+
+func (client *MediaWikiClient) Post(params map[string]string, token string, serverOverride ...string) ([]byte, error) {
+	if len(serverOverride) > 1 {
+		return nil, errors.New("Too many parameters.")
+	}
+
+	var serverUrl string
+
+	if len(serverOverride) == 1 {
+		serverUrl = serverOverride[0]
+	} else {
+		// no override given
+		serverUrl = client.DefaultURL
+	}
+
+	q := url.Values{}
+
+	q.Add("format", "json")
+	q.Add("formatversion", "2")
+
+	for key, val := range params {
+		if key == "action" {
+			serverUrl += "?action=" + val
+			continue
+		}
+		q.Add(key, val)
+	}
+
+	fmt.Println(q.Encode())
+
+	req, _ := http.NewRequest("POST", serverUrl, strings.NewReader(q.Encode()))
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.DoWithUA(req)
 	if err != nil {
 		return nil, err
 	}
 
-	return output, err
+	defer res.Body.Close()
+
+	bodyBytes, err := io.ReadAll(res.Body)
+
+	return bodyBytes, err
 }

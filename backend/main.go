@@ -2,7 +2,9 @@ package main
 
 import (
 	// "gateway/backend/app"
+	"gateway/backend/api"
 	"gateway/backend/auth"
+	"gateway/backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +24,15 @@ func main() {
 	r.GET("/auth/callback", auth.Callback)
 	r.GET("/call", auth.ApiTest)
 	r.GET("/call2", auth.ApiTest2)
+
+	apiPath := r.Group("/api")
+	apiPath.Use(middleware.AuthMiddleware)
+	{
+		v1 := apiPath.Group("/v1")
+		{
+			v1.GET("/editcount/:users", api.GetEditCounts)
+		}
+	}
 
 	r.NoRoute(func(c *gin.Context) {
 		c.File("./frontend/dist/index.html")
