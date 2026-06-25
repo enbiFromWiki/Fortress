@@ -1,11 +1,14 @@
 export function Home() {
     async function fetchDetails() {
-        const res = await fetch(
-            `/api/v1/editcount/Enbi?w=${encodeURIComponent('https://test.wikipedia.org')}`,
-            {
-                credentials: 'include',
-            }
-        );
+        const res = await fetch('/api/v1/rollback', {
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify({
+                server: 'e',
+                user: 'enbi',
+                page: 'test45',
+            }),
+        });
         const data = await res.json();
         let html;
         if (!res.ok) {

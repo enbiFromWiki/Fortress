@@ -2,14 +2,18 @@ package main
 
 import (
 	// "gateway/backend/app"
+	// "fmt"
+	// "gateway/backend/api"
 	"gateway/backend/api"
 	"gateway/backend/auth"
 	"gateway/backend/middleware"
 
+	//"gateway/backend/util"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// fmt.Println(util.IsMediaWikiError([]byte(`{"batchcomplete":""}`)))
 	// app.Run()
 	auth.InitAuth()
 	r := gin.Default()
@@ -30,7 +34,8 @@ func main() {
 	{
 		v1 := apiPath.Group("/v1")
 		{
-			v1.GET("/editcount/:users", api.GetEditCounts)
+			v1.GET("/editcount/:users" /*api.GetEditCounts*/, auth.ApiTest2)
+			v1.POST("/rollback", api.Rollback)
 		}
 	}
 

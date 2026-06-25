@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MediaWikiClient struct {
@@ -18,6 +20,9 @@ type MediaWikiClient struct {
 func (client *MediaWikiClient) DoWithUA(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", client.UserAgent)
 	res, err := client.HTTPC.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	if !IsOK(res) {
 		return nil, errors.New(res.Status)
 	}
@@ -84,6 +89,10 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 		return nil, err
 	}
 
+	if apiError := res.Header.Get("Mediawiki-Api-Error"); apiError != "" {
+		return nil, errors.New(apiError)
+	}
+
 	defer res.Body.Close()
 
 	bodyBytes, err := io.ReadAll(res.Body)
@@ -130,9 +139,20 @@ func (client *MediaWikiClient) Post(params map[string]string, token string, serv
 		return nil, err
 	}
 
+	if apiError := res.Header.Get("Mediawiki-Api-Error"); apiError != "" {
+		return nil, errors.New(apiError)
+	}
+
 	defer res.Body.Close()
 
 	bodyBytes, err := io.ReadAll(res.Body)
 
 	return bodyBytes, err
+}
+
+func ReturnError(c *gin.Context, code int, message string) {
+	c.JSON(500, gin.H{
+		"status": "error",
+		"error":  message,
+	})
 }

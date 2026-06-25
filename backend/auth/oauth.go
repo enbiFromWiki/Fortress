@@ -346,8 +346,8 @@ func ApiTest2(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(500, gin.H{
-			"eror":    "erreur",
-			"trueerr": err,
+			"status":  "erreur",
+			"trueerr": err.Error(),
 		})
 		return
 	}

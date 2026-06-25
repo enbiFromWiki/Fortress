@@ -7,10 +7,22 @@ package api
 // }
 
 import (
+	"encoding/json"
+	"fmt"
+
+	// "gateway/backend/auth"
 	"gateway/backend/util"
 
 	"github.com/gin-gonic/gin"
 )
+
+type RollbackTokenJSON struct {
+	Query struct {
+		Tokens struct {
+			Rollbacktoken string `json:"rollbacktoken"`
+		} `json:"tokens"`
+	} `json:"query"`
+}
 
 type RollbackRequest struct {
 	Page   string `json:"page" binding:"required"`
@@ -19,8 +31,28 @@ type RollbackRequest struct {
 	//Summary string `json:"summary"`
 }
 
+type EditCountResSingleUser struct {
+	UserID    int
+	Name      string
+	Editcount int
+}
+
+type EditCountRes struct {
+	Query struct {
+		Users []EditCountResSingleUser
+	}
+}
+
 func Rollback(c *gin.Context) {
-	var postBody RollbackRequest
+	token, ok := c.Get("accessToken")
+	if !ok {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Middleware auth failure",
+		})
+		return
+	}
+	postBody := RollbackRequest{}
 
 	if err := c.ShouldBindJSON(&postBody); err != nil {
 		c.JSON(500, gin.H{
@@ -29,6 +61,46 @@ func Rollback(c *gin.Context) {
 		})
 		return
 	}
+
+	rollbackTokenJson := RollbackTokenJSON{}
+
+	res, err := util.DefaultClient.Get(map[string]string{
+		"action": "query",
+		"meta":   "tokens",
+		"type":   "rollback",
+	}, token.(string), "https://test.wikipedia.org/w/api.php")
+	if err != nil {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "failed to get token",
+			"code":   err.Error(),
+		})
+		return
+	}
+
+	err = json.Unmarshal(res, &rollbackTokenJson)
+	if err != nil {
+		util.ReturnError(c, 500, "Failed to unmarshal json")
+		return
+	}
+
+	fmt.Println(string(res))
+
+	csrfToken := rollbackTokenJson.Query.Tokens.Rollbacktoken
+	res, err = util.DefaultClient.Post(map[string]string{
+		"action": "rollback",
+		"title":  postBody.Page,
+		"user":   postBody.User,
+		"token":  csrfToken,
+	}, token.(string), "https://test.wikipedia.org/w/api.php")
+	if err != nil {
+		util.ReturnError(c, 500, err.Error())
+		return
+	}
+	c.JSON(200, gin.H{
+		"status": "success",
+		"res":    string(res),
+	})
 }
 
 func GetEditCounts(c *gin.Context) {
@@ -46,6 +118,7 @@ func GetEditCounts(c *gin.Context) {
 			"status": "error",
 			"error":  "Missing required param: 'w'",
 		})
+		return
 	}
 
 	wikiApi := wiki + "/w/api.php"
@@ -61,6 +134,7 @@ func GetEditCounts(c *gin.Context) {
 			"status": "error",
 			"error":  "failed to get users",
 		})
+		return
 	}
 	c.String(200, string(res))
 }
