@@ -11,10 +11,15 @@ import (
 	"fmt"
 
 	// "gateway/backend/auth"
+	"gateway/backend/mediawiki"
 	"gateway/backend/util"
 
 	"github.com/gin-gonic/gin"
 )
+
+type APIService struct {
+	MWClient *mediawiki.MediaWikiClient
+}
 
 type RollbackTokenJSON struct {
 	Query struct {
@@ -43,7 +48,13 @@ type EditCountRes struct {
 	}
 }
 
-func Rollback(c *gin.Context) {
+func NewAPI(mwClient *mediawiki.MediaWikiClient) *APIService {
+	return &APIService{
+		MWClient: mwClient,
+	}
+}
+
+func (a *APIService) Rollback(c *gin.Context) {
 	token, ok := c.Get("accessToken")
 	if !ok {
 		c.JSON(500, gin.H{
@@ -64,7 +75,7 @@ func Rollback(c *gin.Context) {
 
 	rollbackTokenJson := RollbackTokenJSON{}
 
-	res, err := util.DefaultClient.Get(map[string]string{
+	res, err := a.MWClient.Get(map[string]string{
 		"action": "query",
 		"meta":   "tokens",
 		"type":   "rollback",
@@ -87,14 +98,14 @@ func Rollback(c *gin.Context) {
 	fmt.Println(string(res))
 
 	csrfToken := rollbackTokenJson.Query.Tokens.Rollbacktoken
-	res, err = util.DefaultClient.Post(map[string]string{
+	res, err = a.MWClient.Post(map[string]string{
 		"action": "rollback",
 		"title":  postBody.Page,
 		"user":   postBody.User,
 		"token":  csrfToken,
 	}, token.(string), "https://test.wikipedia.org/w/api.php")
 	if err != nil {
-		util.ReturnError(c, 500, err.Error())
+		mediawiki.ReturnError(c, 500, err.Error())
 		return
 	}
 	c.JSON(200, gin.H{
@@ -103,7 +114,7 @@ func Rollback(c *gin.Context) {
 	})
 }
 
-func GetEditCounts(c *gin.Context) {
+func (a *APIService) GetEditCounts(c *gin.Context) {
 	token, ok := c.Get("accessToken")
 	if !ok {
 		c.JSON(500, gin.H{
@@ -123,7 +134,7 @@ func GetEditCounts(c *gin.Context) {
 
 	wikiApi := wiki + "/w/api.php"
 
-	res, err := util.DefaultClient.Get(map[string]string{
+	res, err := a.MWClient.Get(map[string]string{
 		"action":  "query",
 		"list":    "users",
 		"usprop":  "editcount",

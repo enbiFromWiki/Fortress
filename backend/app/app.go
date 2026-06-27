@@ -17,7 +17,7 @@ func GetUsername(c *gin.Context) {
 		})
 		return
 	}
-	session := &auth.JWT{}
+	session := &auth.AuthJSONToken{}
 
 	err = json.Unmarshal([]byte(cookie), session)
 	if err != nil {

@@ -1,14 +1,20 @@
 export function Home() {
     async function fetchDetails() {
-        const res = await fetch('/api/v1/rollback', {
-            method: 'POST',
-            credentials: 'include',
-            body: JSON.stringify({
-                server: 'e',
-                user: 'enbi',
-                page: 'test45',
-            }),
-        });
+        // const res = await fetch('http://localhost:8080/api/v1/rollback', {
+        //     method: 'POST',
+        //     credentials: 'include',
+        //     body: JSON.stringify({
+        //         server: 'e',
+        //         user: 'enbi',
+        //         page: 'test45',
+        //     }),
+        // });
+        const res = await fetch(
+            `http://localhost:8080/api/v1/editcount/enbi?w=${encodeURIComponent('https://test.wikipedia.org')}`,
+            {
+                credentials: 'include',
+            }
+        );
         const data = await res.json();
         let html;
         if (!res.ok) {
