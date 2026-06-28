@@ -2,8 +2,10 @@ package api
 
 import (
 	"gateway/backend/auth"
+	"gateway/backend/eventstream"
 	"gateway/backend/mediawiki"
 	"gateway/backend/middleware"
+	"gateway/backend/wshandler"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -14,20 +16,29 @@ type Server struct {
 	Auth       *auth.AuthService
 	MWClient   *mediawiki.MediaWikiClient
 	ApiService *APIService
+	WSHub      *wshandler.Hub
+	SSEhandler *eventstream.WMStreamer
 }
 
 func NewServer() *Server {
-	mwClient := mediawiki.New("Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org")
+	mwClient := mediawiki.New("Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org/w/api.php")
 	authService := auth.New(mwClient)
 	apiClient := NewAPI(mwClient)
+	wsHub := wshandler.New()
+	sseHandler := eventstream.New(wsHub)
+
 	return &Server{
 		MWClient:   mwClient,
 		Auth:       authService,
 		ApiService: apiClient,
+		WSHub:      wsHub,
+		SSEhandler: sseHandler,
 	}
 }
 
 func (s *Server) Start() {
+	go s.WSHub.Run()
+	go s.SSEhandler.StartStream()
 
 	authMiddleware := middleware.Auth(s.Auth)
 
@@ -45,6 +56,9 @@ func (s *Server) Start() {
 
 	r.GET("/login", s.Auth.Login)
 	r.GET("/auth/callback", s.Auth.Callback)
+	r.GET("/ws", authMiddleware, func(c *gin.Context) {
+		wshandler.ServeWs(s.WSHub, c)
+	})
 
 	apiPath := r.Group("/api")
 	apiPath.Use(authMiddleware)

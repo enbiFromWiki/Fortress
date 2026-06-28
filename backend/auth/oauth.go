@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gateway/backend/mediawiki"
 	"net/http"
 
@@ -107,21 +108,26 @@ func (a *AuthService) Login(c *gin.Context) {
 func (a *AuthService) getToken(code string) (*AuthJSONToken, error) {
 	token, err := a.Config.Exchange(a.Ctx, code)
 
+	if err != nil {
+		return nil, err
+	}
+
 	data, err := a.MWApi.Get(map[string]string{
 		"action": "query",
 		"meta":   "userinfo",
 	}, token.AccessToken)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 
 	var realData map[string]any
 
 	_ = json.Unmarshal(data, &realData)
 
-	if err != nil {
-		return nil, err
-	}
-
 	query, ok := realData["query"].(map[string]any)
 	if !ok {
+		fmt.Println(string(data))
 		return nil, errors.New("Unexpected MediaWiki API response")
 	}
 	userinfo, ok := query["userinfo"].(map[string]any)
@@ -165,7 +171,7 @@ func (a *AuthService) Callback(c *gin.Context) {
 	data, _ := json.Marshal(token)
 
 	c.SetCookie("oauth_tokens", string(data), 14*24*60*60, "/", "", true, true)
-	c.Redirect(302, "/main")
+	c.Redirect(302, "http://localhost:5173")
 }
 
 type uaTransport struct {
