@@ -2,6 +2,7 @@ package wshandler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	ws "github.com/gorilla/websocket"
@@ -14,9 +15,10 @@ var upgrader = ws.Upgrader{
 }
 
 type Client struct {
-	conn *ws.Conn
-	send chan []byte
-	hub  *Hub
+	conn  *ws.Conn
+	send  chan []byte
+	hub   *Hub
+	token string
 }
 
 type Hub struct {
@@ -47,7 +49,7 @@ func (h *Hub) Run() {
 				close(client.send)
 			}
 		case message := <-h.broadcast:
-			for client, _ := range h.clients {
+			for client := range h.clients {
 				select {
 				case client.send <- message:
 
@@ -94,14 +96,29 @@ func ServeWs(hub *Hub, c *gin.Context) {
 		return
 	}
 
+	token, _ := c.Get("accessToken")
+	expiry, _ := c.Get("tokenExpiry")
+
 	client := &Client{
-		conn: conn,
-		hub:  hub,
-		send: make(chan []byte, 256),
+		conn:  conn,
+		hub:   hub,
+		send:  make(chan []byte, 256),
+		token: token.(string),
 	}
 
 	client.hub.register <- client
 
+	time.AfterFunc(time.Until(expiry.(time.Time)), func() {
+		deadline := time.Now().Add(time.Second)
+		hub.unregister <- client
+		client.conn.WriteControl(ws.CloseMessage, ws.FormatCloseMessage(ws.ClosePolicyViolation, "token expired"), deadline)
+		client.conn.Close()
+	})
+
 	go client.writePump()
 	go client.readPump()
+}
+
+func (h *Hub) Broadcast(msg []byte) {
+	h.broadcast <- msg
 }

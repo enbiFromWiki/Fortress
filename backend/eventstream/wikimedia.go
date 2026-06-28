@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"gateway/backend/mediawiki"
+
+	//"gateway/backend/wshandler"
 	"log"
 	"net/http"
 	"strings"
@@ -134,6 +136,7 @@ type WMEventStream struct {
 
 type WMStreamer struct {
 	MWClient *mediawiki.MediaWikiClient
+	//WSHub    *wshandler.Hub
 }
 
 func New(mwclient *mediawiki.MediaWikiClient) *WMStreamer {
@@ -143,7 +146,7 @@ func New(mwclient *mediawiki.MediaWikiClient) *WMStreamer {
 }
 
 func (w *WMStreamer) StartWMStream() {
-	req, err := http.NewRequest("GET", "https://stream.wikimedia.org/v2/stream/recentchange", nil)
+	req, err := http.NewRequest("GET", "https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -166,7 +169,6 @@ func (w *WMStreamer) StartWMStream() {
 		strippedLine := strings.TrimPrefix(line, "data: ")
 
 		// Start of data processing
-		fmt.Println("new data")
 
 		var data WMEventStream
 
@@ -175,9 +177,7 @@ func (w *WMStreamer) StartWMStream() {
 			log.Fatal(err)
 		}
 
-		fmt.Println(data)
-
-		if data.Performer.EditCount != 0 {
+		if data.Performer.EditCount == 0 {
 			fmt.Println(data.Performer.UserText)
 		}
 		// fmt.Println(line)
