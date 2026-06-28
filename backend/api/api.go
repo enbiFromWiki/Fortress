@@ -149,3 +149,57 @@ func (a *APIService) GetEditCounts(c *gin.Context) {
 	}
 	c.String(200, string(res))
 }
+
+type ContentResponseJSON struct {
+	Query struct {
+		Pages []struct {
+			Revisions []struct {
+				Slots struct {
+					Main struct {
+						Content string `json:"content"`
+					} `json:"main"`
+				} `json:"slots"`
+			} `json:"revisions"`
+		} `json:"pages"`
+	} `json:"query"`
+}
+
+func (a *APIService) GetPageContent(c *gin.Context) {
+	token, ok := c.Get("accessToken")
+	if !ok {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Middleware auth failure",
+		})
+	}
+	wiki := c.Query("w")
+	if wiki == "" {
+		c.JSON(400, gin.H{
+			"status": "error",
+			"error":  "Missing required param: 'w'",
+		})
+		return
+	}
+
+	title := c.Param("page")
+
+	wikiApi := wiki + "/w/api.php"
+
+	res, err := a.MWClient.Get(map[string]string{
+		"action":  "query",
+		"prop":    "revisions",
+		"titles":  title,
+		"rvprop":  "ids|timestamp|flags|comment|user|content",
+		"rvslots": "main",
+	}, token.(string), wikiApi)
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "failed to get content",
+		})
+		return
+	}
+
+	c.String(200, string(res))
+}

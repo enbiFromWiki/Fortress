@@ -22,9 +22,9 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 			return
 		}
 
-		jwt := &auth.AuthJSONToken{}
+		authToken := &auth.AuthJSONToken{}
 
-		err = json.Unmarshal([]byte(cookie), jwt)
+		err = json.Unmarshal([]byte(cookie), authToken)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"status": "error",
@@ -35,9 +35,9 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 		}
 
 		tok := &oauth2.Token{
-			AccessToken:  jwt.AccessToken,
-			RefreshToken: jwt.RefreshToken,
-			Expiry:       jwt.Expiry,
+			AccessToken:  authToken.AccessToken,
+			RefreshToken: authToken.RefreshToken,
+			Expiry:       authToken.Expiry,
 		}
 
 		ts := a.Config.TokenSource(a.Ctx, tok)
@@ -52,7 +52,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 		}
 
 		newCookie := &auth.AuthJSONToken{
-			Username:     jwt.Username,
+			Username:     authToken.Username,
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,
 			Expiry:       token.Expiry,
@@ -62,6 +62,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 
 		c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
 		c.Set("accessToken", token.AccessToken)
+		c.Set("tokenExpiry", token.Expiry)
 		c.Next()
 	}
 }

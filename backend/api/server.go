@@ -51,8 +51,9 @@ func (s *Server) Start() {
 	{
 		v1 := apiPath.Group("/v1")
 		{
-			v1.GET("/editcount/:users" /*api.GetEditCounts*/, s.ApiService.GetEditCounts)
+			//v1.GET("/editcount/:users" /*api.GetEditCounts*/, s.ApiService.GetEditCounts)
 			v1.POST("/rollback", s.ApiService.Rollback)
+			v1.GET("/editcount/:page", s.ApiService.GetPageContent)
 		}
 	}
 

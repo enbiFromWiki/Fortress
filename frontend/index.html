@@ -8,6 +8,28 @@
     </head>
     <body>
         <div id="root"></div>
-        <script type="module" src="/src/main.tsx"></script>
+        <!--<script type="module" src="/src/main.tsx"></script>-->
+        <script>
+            const ws = new WebSocket('ws://localhost:8080/ws');
+
+            ws.onopen = () => {
+                console.log('Websocket connected');
+                setInterval(() => {
+                    ws.send('e');
+                }, 2000);
+            };
+
+            ws.onerror = (e) => {
+                console.error(e);
+            };
+
+            ws.onmessage = (event) => {
+                console.log('recieved: ' + event.data);
+            };
+
+            ws.onclose = (e) => {
+                console.log('closed: ', e.code, e.reason);
+            };
+        </script>
     </body>
 </html>
