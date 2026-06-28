@@ -3,7 +3,7 @@ package main
 import (
 	// "gateway/backend/eventstream"
 	"gateway/backend/eventstream"
-	"gateway/backend/mediawiki"
+	//"gateway/backend/mediawiki"
 	// "gateway/backend/auth"
 	// "gateway/backend/middleware"
 	// "gateway/backend/wshandler"
@@ -15,9 +15,9 @@ import (
 func main() {
 	// server := api.NewServer()
 	// server.Start()
-	mwclient := mediawiki.New("Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org")
-	esclient := eventstream.New(mwclient)
-	esclient.StartWMStream()
+	//mwclient := mediawiki.New("Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org")
+	esclient := eventstream.New()
+	esclient.StartStream()
 
 	// authService := auth.New(mwclient)
 	// middlew := middleware.Auth(authService)
