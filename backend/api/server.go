@@ -55,6 +55,7 @@ func (s *Server) Start() {
 	r.Static("/assets", "./frontend/dist/assets")
 
 	r.GET("/login", s.Auth.Login)
+	r.GET("/logout", s.Auth.Logout)
 	r.GET("/auth/callback", s.Auth.Callback)
 	r.GET("/ws", authMiddleware, func(c *gin.Context) {
 		wshandler.ServeWs(s.WSHub, c)
@@ -68,6 +69,7 @@ func (s *Server) Start() {
 			//v1.GET("/editcount/:users" /*api.GetEditCounts*/, s.ApiService.GetEditCounts)
 			v1.POST("/rollback", s.ApiService.Rollback)
 			v1.GET("/editcount/:page", s.ApiService.GetPageContent)
+			v1.GET("/me", s.Auth.Me)
 		}
 	}
 

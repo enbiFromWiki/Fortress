@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"gateway/backend/auth"
 
 	"github.com/gin-gonic/gin"
@@ -14,9 +13,9 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 
 		cookie, err := c.Cookie("oauth_tokens")
 
-		if err != nil {
+		if err != nil || cookie == "" {
 			c.JSON(401, gin.H{
-				"status": "error",
+				"status": "reauth",
 				"error":  "no oauth2 tokens found",
 			})
 			return
@@ -46,7 +45,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 		if err != nil {
 			c.JSON(401, gin.H{
 				"status": "reauth",
-				"error":  fmt.Sprint(err),
+				"error":  "refresh token expired",
 			})
 			return
 		}

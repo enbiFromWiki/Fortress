@@ -1,4 +1,7 @@
+import { useAuthStore } from './stores/authstore';
+
 export function Home() {
+    const logout = useAuthStore((i) => i.logout);
     async function fetchDetails() {
         // const res = await fetch('http://localhost:8080/api/v1/rollback', {
         //     method: 'POST',
@@ -29,6 +32,7 @@ export function Home() {
     return (
         <>
             <h1>Homepage</h1>
+            <div onClick={logout}>Log out</div>
             <div onClick={fetchDetails}>Call API</div>
             <pre id="data-res" style={{ fontSize: '1.2em' }}></pre>
         </>

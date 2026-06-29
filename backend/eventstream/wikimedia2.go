@@ -6,7 +6,6 @@ import (
 
 	//"gateway/backend/mediawiki"
 	"gateway/backend/wshandler"
-	"log"
 	"time"
 
 	"github.com/r3labs/sse/v2"
@@ -127,31 +126,34 @@ func New(hub *wshandler.Hub) *WMStreamer {
 
 func (w *WMStreamer) StartStream() {
 	fmt.Println("start")
-	var prevItem string
 
-	err := w.sseClient.SubscribeRaw(func(msg *sse.Event) {
+	for {
+		var prevItem string
+
 		var dataJson WMEventStream
-		data := msg.Data
-		if string(msg.Data) == prevItem || len(data) == 0 {
-			return
-		}
-		prevItem = string(data)
-		json.Unmarshal(data, &dataJson)
-
-		if user := dataJson.Performer; user.EditCount == 0 {
-			if user.UserText == "" {
-				fmt.Println(string(msg.Data))
+		w.sseClient.SubscribeRaw(func(msg *sse.Event) {
+			data := msg.Data
+			if string(msg.Data) == prevItem || len(data) == 0 {
 				return
 			}
+			prevItem = string(data)
+			json.Unmarshal(data, &dataJson)
 
-			w.hub.Broadcast([]byte(user.UserText))
+			if user := dataJson.Performer; user.EditCount == 0 {
+				if user.UserText == "" {
+					fmt.Println(string(msg.Data))
+					return
+				}
 
-			fmt.Println(user.UserText + "@" + dataJson.WikiID)
+				w.hub.Broadcast([]byte(user.UserText))
 
-		}
-	})
+				fmt.Println(user.UserText + "@" + dataJson.WikiID)
 
-	if err != nil {
-		log.Fatal(err)
+			}
+		})
+
+		fmt.Println("STREAM ENDED; RECONNECTING")
+
+		time.Sleep(time.Second)
 	}
 }

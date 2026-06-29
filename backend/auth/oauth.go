@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"gateway/backend/mediawiki"
+	"gateway/backend/util"
 	"net/http"
 
 	// "net/url"
@@ -182,4 +183,57 @@ type uaTransport struct {
 func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", t.ua)
 	return t.base.RoundTrip(req)
+}
+
+func (a *AuthService) Logout(c *gin.Context) {
+	c.SetCookie("oauth_tokens", "", 14*24*60*60, "/", "", true, true)
+	c.JSON(200, gin.H{
+		"status": "success",
+	})
+}
+
+type UserinfoJSON struct {
+	Query struct {
+		Userinfo struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		} `json:"userinfo"`
+	} `json:"query"`
+}
+
+func (a *AuthService) Me(c *gin.Context) {
+	token, exists := c.Get("accessToken")
+	if !exists || token == "" {
+		util.ReturnError(c, 401, "Middleware failure/unauthorized")
+		return
+	}
+
+	res, err := a.MWApi.Get(map[string]string{
+		"action": "query",
+		"meta":   "userinfo",
+	}, token.(string))
+	if err != nil {
+		util.ReturnError(c, 401, "MediaWiki API failure: "+err.Error())
+		return
+	}
+
+	var userinfo UserinfoJSON
+
+	err = json.Unmarshal(res, &userinfo)
+	if err != nil {
+		util.ReturnError(c, 401, "Failure parsing JSON: "+err.Error())
+		return
+	}
+
+	name := userinfo.Query.Userinfo.Name
+
+	if name == "" {
+		util.ReturnError(c, 502, "MediaWiki API failure")
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status": "success",
+		"user":   name,
+	})
 }
