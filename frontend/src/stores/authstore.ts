@@ -39,7 +39,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
         }
     },
     logout: async () => {
-        await fetch('http://localhost:8080/logout');
+        await fetch('http://localhost:8080/logout', {
+            credentials: 'include',
+        });
         set({
             user: null,
         });

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"gateway/auth"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,6 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		cookie, err := c.Cookie("oauth_tokens")
-		fmt.Println(cookie)
 
 		if err != nil || cookie == "" {
 			c.JSON(401, gin.H{

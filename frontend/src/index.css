@@ -1,5 +1,5 @@
 * {
-    font-family: sans-serif;
+    font-family: Inter, sans-serif;
     color: white;
 }
 
@@ -10,3 +10,5 @@ body {
 #data-res {
     font-family: monospace;
 }
+
+@import 'tailwindcss';

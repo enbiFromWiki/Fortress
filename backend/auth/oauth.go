@@ -172,7 +172,7 @@ func (a *AuthService) Callback(c *gin.Context) {
 	data, _ := json.Marshal(token)
 
 	c.SetCookie("oauth_tokens", string(data), 14*24*60*60, "/", "", true, true)
-	c.Redirect(302, "http://localhost:5173")
+	c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173")
 }
 
 type uaTransport struct {

@@ -1,0 +1,17 @@
+.login-container {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: center;
+    div,
+    a,
+    p,
+    h1 {
+        text-align: center;
+    }
+}
+
+.login-button {
+    padding: 10px;
+}
