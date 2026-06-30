@@ -186,7 +186,7 @@ func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (a *AuthService) Logout(c *gin.Context) {
-	c.SetCookie("oauth_tokens", "", 14*24*60*60, "/", "", true, true)
+	c.SetCookie("oauth_tokens", "", -1, "/", "", true, true)
 	c.JSON(200, gin.H{
 		"status": "success",
 	})

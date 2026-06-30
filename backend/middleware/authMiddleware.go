@@ -61,7 +61,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 
 		cookieData, _ := json.Marshal(newCookie)
 
-		c.SetCookie("oauth_tokens", string(cookieData), -1, "/", "", true, true)
+		c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
 		c.Set("accessToken", token.AccessToken)
 		c.Set("tokenExpiry", token.Expiry)
 		c.Next()
