@@ -1,11 +1,11 @@
 package api
 
 import (
-	"gateway/backend/auth"
-	"gateway/backend/eventstream"
-	"gateway/backend/mediawiki"
-	"gateway/backend/middleware"
-	"gateway/backend/wshandler"
+	"gateway/auth"
+	"gateway/eventstream"
+	"gateway/mediawiki"
+	"gateway/middleware"
+	"gateway/wshandler"
 	"time"
 
 	"github.com/gin-contrib/cors"

@@ -2,7 +2,8 @@ package middleware
 
 import (
 	"encoding/json"
-	"gateway/backend/auth"
+	"fmt"
+	"gateway/auth"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -12,6 +13,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		cookie, err := c.Cookie("oauth_tokens")
+		fmt.Println(cookie)
 
 		if err != nil || cookie == "" {
 			c.JSON(401, gin.H{
@@ -59,7 +61,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 
 		cookieData, _ := json.Marshal(newCookie)
 
-		c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
+		c.SetCookie("oauth_tokens", string(cookieData), -1, "/", "", true, true)
 		c.Set("accessToken", token.AccessToken)
 		c.Set("tokenExpiry", token.Expiry)
 		c.Next()

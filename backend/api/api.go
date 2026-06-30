@@ -10,9 +10,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// "gateway/backend/auth"
-	"gateway/backend/mediawiki"
-	"gateway/backend/util"
+	// "gateway/auth"
+	"gateway/mediawiki"
+	"gateway/util"
 
 	"github.com/gin-gonic/gin"
 )

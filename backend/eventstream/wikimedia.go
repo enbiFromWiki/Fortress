@@ -4,9 +4,9 @@ package eventstream
 // 	"bufio"
 // 	"encoding/json"
 // 	"fmt"
-// 	"gateway/backend/mediawiki"
+// 	"gateway/mediawiki"
 
-// 	//"gateway/backend/wshandler"
+// 	//"gateway/wshandler"
 // 	"net/http"
 // 	"strings"
 // 	"time"

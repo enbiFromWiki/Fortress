@@ -2,7 +2,7 @@ package app
 
 import (
 	"encoding/json"
-	"gateway/backend/auth"
+	"gateway/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

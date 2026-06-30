@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	//"gateway/backend/mediawiki"
-	"gateway/backend/wshandler"
+	//"gateway/mediawiki"
+	"gateway/wshandler"
 	"time"
 
 	"github.com/r3labs/sse/v2"

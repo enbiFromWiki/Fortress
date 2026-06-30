@@ -1,8 +1,8 @@
 package main
 
-import "gateway/backend/api"
+import "gateway/api"
 
-// "gateway/backend/api"
+// "gateway/api"
 
 func main() {
 	server := api.NewServer()

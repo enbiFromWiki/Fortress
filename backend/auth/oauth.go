@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gateway/backend/mediawiki"
-	"gateway/backend/util"
+	"gateway/mediawiki"
+	"gateway/util"
 	"net/http"
 
 	// "net/url"
@@ -30,7 +30,7 @@ type AuthService struct {
 }
 
 func New(mwClient *mediawiki.MediaWikiClient) *AuthService {
-	err := godotenv.Load("./backend/.env")
+	err := godotenv.Load()
 	if err != nil {
 		panic("no .env found.")
 	}
