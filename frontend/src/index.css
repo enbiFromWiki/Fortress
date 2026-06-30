@@ -11,4 +11,14 @@ body {
     font-family: monospace;
 }
 
-@import 'tailwindcss';
+@import 'tailwindcss/preflight.css';
+@import 'tailwindcss/utilities.css';
+@import 'tailwindcss/theme.css';
+
+a {
+    color: #aaf;
+    transition: color 150ms ease-in-out;
+    &:hover {
+        color: #88f;
+    }
+}

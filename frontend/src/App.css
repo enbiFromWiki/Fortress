@@ -7,3 +7,8 @@ html {
 :root {
     overscroll-behavior: none;
 }
+
+#root {
+    width: 100dvw;
+    height: 100dvh;
+}

@@ -24,7 +24,14 @@ function App() {
                 }
             />
             <Route path="/loginpage" element={<Login />} />
-            <Route path="/" element={<Overseer />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute>
+                        <Overseer />
+                    </ProtectedRoute>
+                }
+            />
         </Routes>
     );
 }

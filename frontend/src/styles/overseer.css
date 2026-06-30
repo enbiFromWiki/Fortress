@@ -10,21 +10,17 @@
 }
 
 .left {
-    background-color: red;
     grid-area: a;
 }
 
 .middle {
-    background-color: blue;
     grid-area: b;
 }
 
 .right {
-    background-color: green;
     grid-area: c;
 }
 
 .bottom {
-    background-color: orange;
     grid-area: d;
 }
