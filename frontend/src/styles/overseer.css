@@ -1,26 +1,26 @@
 #container {
     display: grid;
     grid-template-areas:
-        'a b c'
-        'd d d';
-    grid-template-rows: calc(100dvh - 2em) 2em;
+        'a a a'
+        'b c d';
+    grid-template-rows: 2.2em calc(100dvh - 2.2em);
     grid-template-columns: 22% 56% 22%;
     width: 100dvw;
     height: 10dvh;
 }
 
 .left {
-    grid-area: a;
-}
-
-.middle {
     grid-area: b;
 }
 
-.right {
+.middle {
     grid-area: c;
 }
 
-.bottom {
+.right {
     grid-area: d;
+}
+
+.top {
+    grid-area: a;
 }
