@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	//"gateway/mediawiki"
+	"gateway/mediawiki"
 	"gateway/wshandler"
 	"time"
 
@@ -110,6 +111,7 @@ type WMStreamer struct {
 	// MWClient     *mediawiki.MediaWikiClient
 	hub       *wshandler.Hub
 	sseClient *sse.Client
+	mwClient  *mediawiki.MediaWikiClient
 }
 
 func New(hub *wshandler.Hub) *WMStreamer {
@@ -145,7 +147,7 @@ func (w *WMStreamer) StartStream() {
 					return
 				}
 
-				w.hub.Broadcast([]byte(user.UserText))
+				w.hub.Broadcast([]byte(string(data)))
 
 				fmt.Println(user.UserText + "@" + dataJson.WikiID)
 
@@ -156,4 +158,15 @@ func (w *WMStreamer) StartStream() {
 
 		time.Sleep(time.Second)
 	}
+}
+
+func (w *WMStreamer) handleEvent(data WMEventStream) {
+	newid := data.Revision.RevID
+	oldid := data.Revision.RevParentID
+
+	w.mwClient.Get(map[string]string{
+		"action":  "compare",
+		"fromrev": fmt.Sprintf("%v", oldid),
+		"torev":   fmt.Sprintf("%v", newid),
+	}, "none")
 }

@@ -83,7 +83,9 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 
 	req, _ := http.NewRequest("GET", parsedUrl.String(), nil)
 
-	req.Header.Set("Authorization", "Bearer "+token)
+	if token != "none" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 
 	res, err := client.DoWithUA(req)
 	if err != nil {

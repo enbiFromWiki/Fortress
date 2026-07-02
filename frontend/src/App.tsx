@@ -6,12 +6,14 @@ import { Overseer } from './components/overseer';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authstore';
 import { ProtectedRoute } from './components/protectedroute';
+import { startWs } from './websocket/wshandler';
 
 function App() {
     const init = useAuthStore((i) => i.init);
 
     useEffect(() => {
         init();
+        startWs();
     }, [init]);
     return (
         <Routes>
