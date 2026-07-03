@@ -160,13 +160,67 @@ func (w *WMStreamer) StartStream() {
 	}
 }
 
-func (w *WMStreamer) handleEvent(data WMEventStream) {
-	newid := data.Revision.RevID
-	oldid := data.Revision.RevParentID
+type MWCompareJSON struct {
+	Compare struct {
+		Body string `json:"body"`
+	} `json:"compare"`
+}
 
-	w.mwClient.Get(map[string]string{
+type WSUser struct {
+	Username       string    `json:"username"`
+	Userid         int       `json:"userid"`
+	IsTemp         bool      `json:"istemp"`
+	EditCount      int       `json:"editcount"`
+	UserGroups     []string  `json:"usergroups"`
+	UserCreateDate time.Time `json:"userage"`
+}
+
+type WSSentJSON struct {
+	User     WSUser `json:"user"`
+	Title    string `json:"title"`
+	DiffHTML string `json:"diffhtml"`
+	NewID    int64  `json:"newid"`
+	OldID    int64  `json:"oldid"`
+}
+
+func (w *WMStreamer) handleEvent(streamData WMEventStream) {
+	newid := streamData.Revision.RevID
+	oldid := streamData.Revision.RevParentID
+
+	res, err := w.mwClient.Get(map[string]string{
 		"action":  "compare",
 		"fromrev": fmt.Sprintf("%v", oldid),
 		"torev":   fmt.Sprintf("%v", newid),
 	}, "none")
+
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+
+	var data MWCompareJSON
+
+	err = json.Unmarshal(res, &data)
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+
+	body := data.Compare.Body
+	performer := streamData.Performer
+	sendingData := WSSentJSON{
+		User: WSUser{
+			Username:       performer.UserText,
+			Userid:         performer.UserID,
+			IsTemp:         performer.IsTemp,
+			EditCount:      performer.EditCount,
+			UserGroups:     performer.Groups,
+			UserCreateDate: performer.RegistrationDt,
+		},
+		Title:    streamData.Page.PageTitle,
+		DiffHTML: body,
+		NewID:    newid,
+		OldID:    oldid,
+	}
+	w.hub.Broadcast(sendingData)
 }

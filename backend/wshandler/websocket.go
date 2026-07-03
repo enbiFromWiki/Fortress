@@ -16,7 +16,7 @@ var upgrader = ws.Upgrader{
 
 type Client struct {
 	conn  *ws.Conn
-	send  chan []byte
+	send  chan any //struct
 	hub   *Hub
 	token string
 }
@@ -25,7 +25,7 @@ type Hub struct {
 	clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan []byte
+	broadcast  chan any //struct
 }
 
 func New() *Hub {
@@ -33,7 +33,7 @@ func New() *Hub {
 		clients:    make(map[*Client]bool),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		broadcast:  make(chan []byte),
+		broadcast:  make(chan any),
 	}
 }
 
@@ -83,7 +83,7 @@ func (c *Client) writePump() {
 	defer c.conn.Close()
 
 	for msg := range c.send {
-		err := c.conn.WriteMessage(ws.TextMessage, msg)
+		err := c.conn.WriteJSON(msg)
 		if err != nil {
 			break
 		}
@@ -102,7 +102,7 @@ func ServeWs(hub *Hub, c *gin.Context) {
 	client := &Client{
 		conn:  conn,
 		hub:   hub,
-		send:  make(chan []byte, 256),
+		send:  make(chan any),
 		token: token.(string),
 	}
 
@@ -119,6 +119,6 @@ func ServeWs(hub *Hub, c *gin.Context) {
 	go client.readPump()
 }
 
-func (h *Hub) Broadcast(msg []byte) {
+func (h *Hub) Broadcast(msg any) {
 	h.broadcast <- msg
 }
