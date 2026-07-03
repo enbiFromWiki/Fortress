@@ -114,7 +114,7 @@ type WMStreamer struct {
 	mwClient  *mediawiki.MediaWikiClient
 }
 
-func New(hub *wshandler.Hub) *WMStreamer {
+func New(hub *wshandler.Hub, mwClient *mediawiki.MediaWikiClient) *WMStreamer {
 	client := sse.NewClient("https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1")
 	client.Headers = map[string]string{
 		"User-Agent": "Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)",
@@ -123,6 +123,7 @@ func New(hub *wshandler.Hub) *WMStreamer {
 	return &WMStreamer{
 		hub:       hub,
 		sseClient: client,
+		mwClient:  mwClient,
 	}
 }
 
@@ -140,6 +141,9 @@ func (w *WMStreamer) StartStream() {
 			}
 			prevItem = string(data)
 			json.Unmarshal(data, &dataJson)
+			if dataJson.PageChangeKind != "edit" {
+				return
+			}
 
 			if user := dataJson.Performer; user.EditCount == 0 {
 				if user.UserText == "" {
@@ -147,7 +151,7 @@ func (w *WMStreamer) StartStream() {
 					return
 				}
 
-				w.hub.Broadcast([]byte(string(data)))
+				w.handleEvent(&dataJson)
 
 				fmt.Println(user.UserText + "@" + dataJson.WikiID)
 
@@ -176,22 +180,34 @@ type WSUser struct {
 }
 
 type WSSentJSON struct {
-	User     WSUser `json:"user"`
-	Title    string `json:"title"`
-	DiffHTML string `json:"diffhtml"`
-	NewID    int64  `json:"newid"`
-	OldID    int64  `json:"oldid"`
+	User       WSUser `json:"user"`
+	Title      string `json:"title"`
+	DiffHTML   string `json:"diffhtml"`
+	NewID      int64  `json:"newid"`
+	OldID      int64  `json:"oldid"`
+	Wiki       string `json:"wiki"`
+	WikiDomain string `json:"domain"`
 }
 
-func (w *WMStreamer) handleEvent(streamData WMEventStream) {
+func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	newid := streamData.Revision.RevID
 	oldid := streamData.Revision.RevParentID
+	if newid == 0 || oldid == 0 {
+		streamStr, err := json.Marshal(streamData)
+		if err != nil {
+			fmt.Println("failed to marshal error with diff: " + err.Error())
+			return
+		}
+		fmt.Println(string(streamStr))
+
+	}
+	apiPath := "https://" + streamData.Meta.Domain + "/w/api.php"
 
 	res, err := w.mwClient.Get(map[string]string{
 		"action":  "compare",
 		"fromrev": fmt.Sprintf("%v", oldid),
 		"torev":   fmt.Sprintf("%v", newid),
-	}, "none")
+	}, "none", apiPath)
 
 	if err != nil {
 		fmt.Printf("error: %s", err.Error())
@@ -217,10 +233,12 @@ func (w *WMStreamer) handleEvent(streamData WMEventStream) {
 			UserGroups:     performer.Groups,
 			UserCreateDate: performer.RegistrationDt,
 		},
-		Title:    streamData.Page.PageTitle,
-		DiffHTML: body,
-		NewID:    newid,
-		OldID:    oldid,
+		Title:      streamData.Page.PageTitle,
+		DiffHTML:   body,
+		NewID:      newid,
+		OldID:      oldid,
+		Wiki:       streamData.WikiID,
+		WikiDomain: streamData.Meta.Domain,
 	}
 	w.hub.Broadcast(sendingData)
 }

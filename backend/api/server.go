@@ -25,7 +25,7 @@ func NewServer() *Server {
 	authService := auth.New(mwClient)
 	apiClient := NewAPI(mwClient)
 	wsHub := wshandler.New()
-	sseHandler := eventstream.New(wsHub)
+	sseHandler := eventstream.New(wsHub, mwClient)
 
 	return &Server{
 		MWClient:   mwClient,
