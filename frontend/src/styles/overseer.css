@@ -1,12 +1,21 @@
 #container {
     display: grid;
     grid-template-areas:
-        'a a a'
-        'b c d';
-    grid-template-rows: 2.2em calc(100dvh - 2.2em);
-    grid-template-columns: 22% 56% 22%;
+        'e a a d'
+        'e b c d'
+        'f f f f';
+    grid-template-rows: 2.3em calc(100dvh - 3.8em) 1.5em;
+    grid-template-columns: 2.8em 22% calc(56% - 2.8em) 22%;
     width: 100dvw;
     height: 10dvh;
+}
+
+.bottom {
+    grid-area: f;
+}
+
+.sidebar {
+    grid-area: e;
 }
 
 .left {

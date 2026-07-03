@@ -1,19 +1,22 @@
 import './App.css';
 import { Routes, Route } from 'react-router';
-import { Login } from './login';
+import { Login } from './components/login';
 import { Home } from './home';
-import { Overseer } from './components/overseer';
+import { Fortress } from './components/overseer';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authstore';
 import { ProtectedRoute } from './components/protectedroute';
-import { startWs } from './websocket/wshandler';
+import { Forbidden } from './components/forbidden';
+import { FourOhFour } from './components/404';
 
 function App() {
     const init = useAuthStore((i) => i.init);
 
     useEffect(() => {
-        init();
-        startWs();
+        async function start() {
+            await init();
+        }
+        start();
     }, [init]);
     return (
         <Routes>
@@ -25,15 +28,17 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route path="/forbidden" element={<Forbidden />} />
             <Route path="/loginpage" element={<Login />} />
             <Route
                 path="/"
                 element={
                     <ProtectedRoute>
-                        <Overseer />
+                        <Fortress />
                     </ProtectedRoute>
                 }
             />
+            <Route path="*" element={<FourOhFour />} />
         </Routes>
     );
 }

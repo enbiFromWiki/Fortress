@@ -21,7 +21,7 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	mwClient := mediawiki.New("Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org/w/api.php")
+	mwClient := mediawiki.New("Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org/w/api.php")
 	authService := auth.New(mwClient)
 	apiClient := NewAPI(mwClient)
 	wsHub := wshandler.New()

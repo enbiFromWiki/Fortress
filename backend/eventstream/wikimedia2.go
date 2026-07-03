@@ -3,6 +3,7 @@ package eventstream
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	//"gateway/mediawiki"
 	"gateway/mediawiki"
@@ -18,11 +19,11 @@ type WMEventStream struct {
 	Dt             time.Time `json:"dt"`
 	WikiID         string    `json:"wiki_id"`
 	Page           struct {
-		PageID      int    `json:"page_id"`
-		PageTitle   string `json:"page_title"`
-		NamespaceID int    `json:"namespace_id"`
-		IsRedirect  bool   `json:"is_redirect"`
-		// NamespaceIsContent bool   `json:"namespace_is_content"`
+		PageID             int    `json:"page_id"`
+		PageTitle          string `json:"page_title"`
+		NamespaceID        int    `json:"namespace_id"`
+		IsRedirect         bool   `json:"is_redirect"`
+		NamespaceIsContent bool   `json:"namespace_is_content"`
 	} `json:"page"`
 	Performer struct {
 		UserText       string    `json:"user_text"`
@@ -117,7 +118,7 @@ type WMStreamer struct {
 func New(hub *wshandler.Hub, mwClient *mediawiki.MediaWikiClient) *WMStreamer {
 	client := sse.NewClient("https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1")
 	client.Headers = map[string]string{
-		"User-Agent": "Overseer anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)",
+		"User-Agent": "Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)",
 	}
 
 	return &WMStreamer{
@@ -187,11 +188,14 @@ type WSSentJSON struct {
 	OldID      int64  `json:"oldid"`
 	Wiki       string `json:"wiki"`
 	WikiDomain string `json:"domain"`
+	DiffSize   int    `json:"diffsize"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	newid := streamData.Revision.RevID
 	oldid := streamData.Revision.RevParentID
+	diffSize := streamData.Revision.RevSize - streamData.PriorState.Revision.RevSize
+	title := strings.Replace(streamData.Page.PageTitle, "_", " ", -1)
 	if newid == 0 || oldid == 0 {
 		streamStr, err := json.Marshal(streamData)
 		if err != nil {
@@ -233,12 +237,13 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 			UserGroups:     performer.Groups,
 			UserCreateDate: performer.RegistrationDt,
 		},
-		Title:      streamData.Page.PageTitle,
+		Title:      title,
 		DiffHTML:   body,
 		NewID:      newid,
 		OldID:      oldid,
 		Wiki:       streamData.WikiID,
 		WikiDomain: streamData.Meta.Domain,
+		DiffSize:   diffSize,
 	}
 	w.hub.Broadcast(sendingData)
 }

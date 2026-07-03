@@ -35,7 +35,6 @@ export function DiffViewer() {
                 /(https?:\/\/[^\s|]+)/g,
                 '<a href="$1" target="_blank" class="diff-link">$1</a>'
             );
-        console.log(replaced);
         return replaced;
     }
 

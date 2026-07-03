@@ -3,14 +3,16 @@ import { useAuthStore } from '../stores/authstore';
 import { Navigate } from 'react-router';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-    const user = useAuthStore((i) => i.user);
-    const loading = useAuthStore((i) => i.loading);
+    const auth = useAuthStore();
 
-    if (loading) {
+    if (auth.loading) {
         return <div>loading...</div>;
     }
-    if (!user) {
+    if (auth.status === 'unauthorized' || auth.status === 'unknown') {
         return <Navigate to="/loginpage" replace />;
+    }
+    if (auth.status === 'forbidden') {
+        return <Navigate to="/forbidden" replace />;
     }
 
     return children;

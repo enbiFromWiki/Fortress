@@ -13,11 +13,17 @@ body {
 @import 'tailwindcss/theme.css';
 
 a {
-    color: #aaf;
+    color: #88f;
     transition: color 150ms ease-in-out;
     &:hover {
-        color: #88f;
+        color: #66f;
     }
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 ::-webkit-scrollbar {
