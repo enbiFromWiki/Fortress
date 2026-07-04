@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { diff } from '../testvalues';
 import '../styles/diff.css';
+import { useEditStore } from '../stores/editstore';
 
 export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
+    const diff = useEditStore(
+        (state) => state.edits[state.selectedIndex]?.diffhtml
+    );
 
     useEffect(() => {
         const table = tableRef.current;
@@ -40,13 +43,10 @@ export function DiffViewer() {
 
     if (!diff) {
         return (
-            <div className="flex justify-center items-center h-full w-full text-center">
-                <div className="diff-err-holder">
-                    <div className="text-9xl sad-face font-light">:{'('}</div>
-                    <p className="error-text m-3">
-                        FN One couldn{"'"}t fetch the diff for this edit.
-                    </p>
-                </div>
+            <div className="flex justify-center h-full w-full text-center">
+                <p className="mt-[30vh] text-neutral-400">
+                    Waiting for new edit...
+                </p>
             </div>
         );
     }

@@ -1,3 +1,5 @@
+import type { WSResponse } from './types/types';
+
 export const diff =
     '<tr>\n  <td colspan="2" class="diff-lineno">Line 80:</td>\n  <td colspan="2" class="diff-lineno">Line 80:</td>\n</tr>\n<tr>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-deleted"><br /></td>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-added"><br /></td>\n</tr>\n<tr>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-deleted"><div>=== Al-Qalaye ===</div></td>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-added"><div>=== Al-Qalaye ===</div></td>\n</tr>\n<tr>\n  <td class="diff-marker" data-marker="−"></td>\n  <td class="diff-deletedline diff-side-deleted"><div>Al-Qalaye is <del class="diffchange diffchange-inline">a monastic</del> archaeological site in the Al-Ruba\'iyat area of Hosh Issa, regarded as the second largest cluster of monastic remains in the history of [[Christian monasticism]].&lt;ref&gt;{{Cite web |title=Egypt uncovers 5th-century Coptic monastic guesthouse in Beheira - Coptic - Antiquities |url=https://english.ahram.org.eg/UI/Front/Inner.aspx?NewsContentID=564482 |access-date=2026-07-01 |website=Ahram Online}}&lt;/ref&gt; Excavations at the site began in 2023 and have brought to light groups of [[Monastic cell|monastic cells]] called \'\'manshubiyat\'\', along with buildings that supported the community\'s operations.&lt;ref&gt;{{Cite web |title=Egypt uncovers 5th-century Coptic monastic guesthouse in Beheira - Coptic - Antiquities |url=https://english.ahram.org.eg/UI/Front/Inner.aspx?NewsContentID=564482 |access-date=2026-07-01 |website=Ahram Online}}&lt;/ref&gt;</div></td>\n  <td class="diff-marker" data-marker="+"></td>\n  <td class="diff-addedline diff-side-added"><div>Al-Qalaye is <ins class="diffchange diffchange-inline">an</ins> <ins class="diffchange diffchange-inline">[[</ins>archaeological site<ins class="diffchange diffchange-inline">]]</ins> in the Al-Ruba\'iyat area of Hosh Issa, regarded as the second largest cluster of monastic remains in the history of [[Christian monasticism]].&lt;ref&gt;{{Cite web |title=Egypt uncovers 5th-century Coptic monastic guesthouse in Beheira - Coptic - Antiquities |url=https://english.ahram.org.eg/UI/Front/Inner.aspx?NewsContentID=564482 |access-date=2026-07-01 |website=Ahram Online}}&lt;/ref&gt; Excavations at the site began in 2023 and have brought to light groups of [[Monastic cell|monastic cells]] called \'\'manshubiyat\'\', along with buildings that supported the community\'s operations.&lt;ref&gt;{{Cite web |title=Egypt uncovers 5th-century Coptic monastic guesthouse in Beheira - Coptic - Antiquities |url=https://english.ahram.org.eg/UI/Front/Inner.aspx?NewsContentID=564482 |access-date=2026-07-01 |website=Ahram Online}}&lt;/ref&gt;</div></td>\n</tr>\n<tr>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-deleted"><br /></td>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-added"><br /></td>\n</tr>\n<tr>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-deleted"><div>==See also==</div></td>\n  <td class="diff-marker"></td>\n  <td class="diff-context diff-side-added"><div>==See also==</div></td>\n</tr>\n';
 
@@ -20,25 +22,7 @@ export const wsresponse: WSResponse = {
     diffsize: 561,
 };
 
-export type WSResponse = {
-    user: {
-        username: string;
-        userid: number;
-        istemp: boolean;
-        editcount: number;
-        usergroups: string[];
-        userage: string;
-    };
-    title: string;
-    diffhtml: string;
-    newid: number;
-    oldid: number;
-    wiki: string;
-    domain: string;
-    diffsize: number;
-};
-
-export const wsresponse2 = {
+export const wsresponse2: WSResponse = {
     user: {
         username: '~2026-38067-06',
         userid: 54616157,

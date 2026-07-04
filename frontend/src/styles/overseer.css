@@ -1,10 +1,11 @@
 #container {
     display: grid;
     grid-template-areas:
-        'e a a d'
+        'e a g d'
+        'e b g d'
         'e b c d'
         'f f f f';
-    grid-template-rows: 2.3em calc(100dvh - 3.8em) 1.5em;
+    grid-template-rows: 2.3em 4em calc(100dvh - 7.8em) 1.5em;
     grid-template-columns: 2.8em 22% calc(56% - 2.8em) 22%;
     width: 100dvw;
     height: 10dvh;

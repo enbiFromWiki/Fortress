@@ -146,7 +146,7 @@ func (w *WMStreamer) StartStream() {
 				return
 			}
 
-			if user := dataJson.Performer; user.EditCount == 0 {
+			if user := dataJson.Performer; user.EditCount < 6 && dataJson.WikiID == "enwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
@@ -167,7 +167,8 @@ func (w *WMStreamer) StartStream() {
 
 type MWCompareJSON struct {
 	Compare struct {
-		Body string `json:"body"`
+		ToParsedComment string `json:"toparsedcomment"`
+		Body            string `json:"body"`
 	} `json:"compare"`
 }
 
@@ -181,14 +182,15 @@ type WSUser struct {
 }
 
 type WSSentJSON struct {
-	User       WSUser `json:"user"`
-	Title      string `json:"title"`
-	DiffHTML   string `json:"diffhtml"`
-	NewID      int64  `json:"newid"`
-	OldID      int64  `json:"oldid"`
-	Wiki       string `json:"wiki"`
-	WikiDomain string `json:"domain"`
-	DiffSize   int    `json:"diffsize"`
+	User          WSUser `json:"user"`
+	Title         string `json:"title"`
+	DiffHTML      string `json:"diffhtml"`
+	NewID         int64  `json:"newid"`
+	OldID         int64  `json:"oldid"`
+	Wiki          string `json:"wiki"`
+	WikiDomain    string `json:"domain"`
+	DiffSize      int    `json:"diffsize"`
+	ParsedComment string `json:"parsedcomment"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
@@ -211,6 +213,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		"action":  "compare",
 		"fromrev": fmt.Sprintf("%v", oldid),
 		"torev":   fmt.Sprintf("%v", newid),
+		"prop":    "diff|parsedcomment",
 	}, "none", apiPath)
 
 	if err != nil {
@@ -227,6 +230,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	}
 
 	body := data.Compare.Body
+	comment := data.Compare.ToParsedComment
 	performer := streamData.Performer
 	sendingData := WSSentJSON{
 		User: WSUser{
@@ -237,13 +241,14 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 			UserGroups:     performer.Groups,
 			UserCreateDate: performer.RegistrationDt,
 		},
-		Title:      title,
-		DiffHTML:   body,
-		NewID:      newid,
-		OldID:      oldid,
-		Wiki:       streamData.WikiID,
-		WikiDomain: streamData.Meta.Domain,
-		DiffSize:   diffSize,
+		Title:         title,
+		DiffHTML:      body,
+		NewID:         newid,
+		OldID:         oldid,
+		Wiki:          streamData.WikiID,
+		WikiDomain:    streamData.Meta.Domain,
+		DiffSize:      diffSize,
+		ParsedComment: comment,
 	}
 	w.hub.Broadcast(sendingData)
 }

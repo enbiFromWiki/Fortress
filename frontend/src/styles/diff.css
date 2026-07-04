@@ -1,16 +1,18 @@
 table * {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: monospace;
     box-sizing: border-box;
     margin: 0 auto;
     font-size: 0.8rem;
+    font-weight: light;
+    color: #ddd;
 }
 
 table a {
-    text-decoration: underline;
+    text-decoration: underline !important;
 }
 
 .diff-link {
-    color: #ccc;
+    color: #ccc !important;
 }
 
 .inline-diff-holder {
@@ -70,6 +72,9 @@ colgroup col:nth-child(4) {
 .diff-addedline,
 .diff-deletedline {
     transition: all 0.1s ease-in-out;
+    * {
+        color: #e8e8e8;
+    }
 }
 
 ins {

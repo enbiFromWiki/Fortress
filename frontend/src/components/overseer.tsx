@@ -4,11 +4,24 @@ import { DiffViewer } from './diffviewer';
 import { TopBar } from './top';
 import { startWs } from '../websocket/wshandler';
 import { useEffect } from 'react';
+import { useEditStore } from '../stores/editstore';
 
 export function Fortress() {
+    const increment = useEditStore((i) => i.incrementSelection);
+    const decrement = useEditStore((i) => i.decrementSelection);
+
     useEffect(() => {
         startWs();
-    }, []);
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                increment();
+            }
+            if (e.key === '[') {
+                decrement();
+            }
+        });
+    }, [increment, decrement]);
     return (
         <div id="container">
             <div className="left bg-[#1a1a1a] border-r border-r-neutral-700">
