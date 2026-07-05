@@ -8,8 +8,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type MediaWikiClient struct {
@@ -151,11 +149,4 @@ func (client *MediaWikiClient) Post(params map[string]string, token string, serv
 	bodyBytes, err := io.ReadAll(res.Body)
 
 	return bodyBytes, err
-}
-
-func ReturnError(c *gin.Context, code int, message string) {
-	c.JSON(500, gin.H{
-		"status": "error",
-		"error":  message,
-	})
 }

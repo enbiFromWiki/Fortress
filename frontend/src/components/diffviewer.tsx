@@ -7,12 +7,15 @@ export function DiffViewer() {
     const diff = useEditStore(
         (state) => state.edits[state.selectedIndex]?.diffhtml
     );
+    const isCurrent = useEditStore(
+        (state) => state.edits[state.selectedIndex]?.currentRevision
+    );
 
     useEffect(() => {
         const table = tableRef.current;
         if (!table) return;
 
-        const firstIns = table.querySelector('ins');
+        const firstIns = table.querySelector('ins, del');
 
         if (firstIns) {
             firstIns.scrollIntoView({
@@ -51,7 +54,9 @@ export function DiffViewer() {
         );
     }
     return (
-        <div className={`diff-holder w-full h-full overflow-y-auto`}>
+        <div
+            className={`diff-holder w-full h-full overflow-y-auto ${isCurrent ? '' : 'diff-notcurrent'}`}
+        >
             <div className="diff-radius-container">
                 <table className="diff">
                     <colgroup>

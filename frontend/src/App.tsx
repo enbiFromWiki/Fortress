@@ -2,7 +2,7 @@ import './App.css';
 import { Routes, Route } from 'react-router';
 import { Login } from './components/login';
 import { Home } from './home';
-import { Fortress } from './components/overseer';
+import { Fortress } from './components/fortress';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authstore';
 import { ProtectedRoute } from './components/protectedroute';

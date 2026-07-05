@@ -1,6 +1,7 @@
 package wshandler
 
 import (
+	"gateway/mediawiki"
 	"net/http"
 	"time"
 
@@ -14,26 +15,41 @@ var upgrader = ws.Upgrader{
 	},
 }
 
+type WikiPage struct {
+	Title string
+	Wiki  string
+}
+
 type Client struct {
-	conn  *ws.Conn
-	send  chan any //struct
-	hub   *Hub
-	token string
+	conn      *ws.Conn
+	Send      chan any //struct
+	hub       *Hub
+	token     string
+	SeenPages []WikiPage
+	paused    bool
 }
 
 type Hub struct {
-	clients    map[*Client]bool
+	Clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan any //struct
 }
 
-func New() *Hub {
-	return &Hub{
-		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan any),
+type WebSocketService struct {
+	MWClient *mediawiki.MediaWikiClient
+	Hub      *Hub
+}
+
+func New(mwclient *mediawiki.MediaWikiClient) *WebSocketService {
+	return &WebSocketService{
+		Hub: &Hub{
+			Clients:    make(map[*Client]bool),
+			register:   make(chan *Client),
+			unregister: make(chan *Client),
+			broadcast:  make(chan any),
+		},
+		MWClient: mwclient,
 	}
 }
 
@@ -41,21 +57,24 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.clients[client] = true
+			h.Clients[client] = true
 
 		case client := <-h.unregister:
-			if _, exists := h.clients[client]; exists {
-				delete(h.clients, client)
-				close(client.send)
+			if _, exists := h.Clients[client]; exists {
+				delete(h.Clients, client)
+				close(client.Send)
 			}
 		case message := <-h.broadcast:
-			for client := range h.clients {
+			for client := range h.Clients {
+				if client.paused {
+					continue
+				}
 				select {
-				case client.send <- message:
+				case client.Send <- message:
 
 				default:
-					delete(h.clients, client)
-					close(client.send)
+					delete(h.Clients, client)
+					close(client.Send)
 				}
 			}
 		}
@@ -75,14 +94,14 @@ func (c *Client) readPump() {
 			break
 		}
 
-		c.hub.broadcast <- msg
+		handleIncomingMessage(c, msg)
 	}
 }
 
 func (c *Client) writePump() {
 	defer c.conn.Close()
 
-	for msg := range c.send {
+	for msg := range c.Send {
 		err := c.conn.WriteJSON(msg)
 		if err != nil {
 			break
@@ -100,10 +119,12 @@ func ServeWs(hub *Hub, c *gin.Context) {
 	expiry, _ := c.Get("tokenExpiry")
 
 	client := &Client{
-		conn:  conn,
-		hub:   hub,
-		send:  make(chan any),
-		token: token.(string),
+		conn:      conn,
+		hub:       hub,
+		Send:      make(chan any),
+		token:     token.(string),
+		SeenPages: []WikiPage{},
+		paused:    false,
 	}
 
 	client.hub.register <- client

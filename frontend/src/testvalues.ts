@@ -20,6 +20,8 @@ export const wsresponse: WSResponse = {
     wiki: 'enwiki',
     domain: 'en.wikipedia.org',
     diffsize: 561,
+    parsedcomment: '',
+    currentRevision: true,
 };
 
 export const wsresponse2: WSResponse = {
@@ -38,5 +40,7 @@ export const wsresponse2: WSResponse = {
     oldid: 1350009420,
     wiki: 'enwiki',
     domain: 'en.wikipedia.org',
+    parsedcomment: '',
     diffsize: -123,
+    currentRevision: true,
 };

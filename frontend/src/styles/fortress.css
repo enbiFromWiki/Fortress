@@ -34,3 +34,7 @@
 .top {
     grid-area: a;
 }
+
+.infobox {
+    grid-area: g;
+}

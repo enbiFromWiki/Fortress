@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"gateway/auth"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -30,6 +31,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 				"error":  "Failed to extract json cookies",
 				"cookie": cookie,
 			})
+			log.Fatal(err)
 			return
 		}
 

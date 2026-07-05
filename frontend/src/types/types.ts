@@ -15,4 +15,5 @@ export type WSResponse = {
     domain: string;
     diffsize: number;
     parsedcomment: string;
+    currentRevision: boolean;
 };

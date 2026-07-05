@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"gateway/mediawiki"
-	"gateway/util"
 	"net/http"
 
 	// "net/url"
@@ -201,39 +200,31 @@ type UserinfoJSON struct {
 	} `json:"query"`
 }
 
-func (a *AuthService) Me(c *gin.Context) {
-	token, exists := c.Get("accessToken")
-	if !exists || token == "" {
-		util.ReturnError(c, 401, "Middleware failure/unauthorized")
-		return
-	}
-
-	res, err := a.MWApi.Get(map[string]string{
-		"action": "query",
-		"meta":   "userinfo",
-	}, token.(string))
-	if err != nil {
-		util.ReturnError(c, 401, "MediaWiki API failure: "+err.Error())
-		return
-	}
-
-	var userinfo UserinfoJSON
-
-	err = json.Unmarshal(res, &userinfo)
-	if err != nil {
-		util.ReturnError(c, 401, "Failure parsing JSON: "+err.Error())
-		return
-	}
-
-	name := userinfo.Query.Userinfo.Name
-
-	if name == "" {
-		util.ReturnError(c, 502, "MediaWiki API failure")
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"status": "success",
-		"user":   name,
-	})
+type GlobalUserInfoJSON struct {
+	Batchcomplete bool `json:"batchcomplete"`
+	Query         struct {
+		Globaluserinfo struct {
+			Home         string        `json:"home"`
+			ID           int           `json:"id"`
+			Registration time.Time     `json:"registration"`
+			Name         string        `json:"name"`
+			Locked       bool          `json:"locked"`
+			Groups       []interface{} `json:"groups"`
+			Merged       []struct {
+				Wiki         string    `json:"wiki"`
+				URL          string    `json:"url"`
+				ID           int       `json:"id"`
+				Timestamp    time.Time `json:"timestamp"`
+				Method       string    `json:"method"`
+				Editcount    int       `json:"editcount"`
+				Registration time.Time `json:"registration"`
+				Groups       []string  `json:"groups,omitempty"`
+				Blocked      struct {
+					Expiry string `json:"expiry"`
+					Reason string `json:"reason"`
+				} `json:"blocked,omitempty"`
+			} `json:"merged"`
+			Editcount int `json:"editcount"`
+		} `json:"globaluserinfo"`
+	} `json:"query"`
 }

@@ -3,6 +3,7 @@ package eventstream
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	//"gateway/mediawiki"
@@ -110,19 +111,19 @@ type WMEventStream struct {
 
 type WMStreamer struct {
 	// MWClient     *mediawiki.MediaWikiClient
-	hub       *wshandler.Hub
+	wss       *wshandler.WebSocketService
 	sseClient *sse.Client
 	mwClient  *mediawiki.MediaWikiClient
 }
 
-func New(hub *wshandler.Hub, mwClient *mediawiki.MediaWikiClient) *WMStreamer {
+func New(wss *wshandler.WebSocketService, mwClient *mediawiki.MediaWikiClient) *WMStreamer {
 	client := sse.NewClient("https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1")
 	client.Headers = map[string]string{
 		"User-Agent": "Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)",
 	}
 
 	return &WMStreamer{
-		hub:       hub,
+		wss:       wss,
 		sseClient: client,
 		mwClient:  mwClient,
 	}
@@ -144,6 +145,19 @@ func (w *WMStreamer) StartStream() {
 			json.Unmarshal(data, &dataJson)
 			if dataJson.PageChangeKind != "edit" {
 				return
+			}
+
+			for client := range w.wss.Hub.Clients {
+				if slices.Contains(client.SeenPages, wshandler.WikiPage{
+					Title: dataJson.Page.PageTitle,
+					Wiki:  dataJson.WikiID,
+				}) {
+					client.Send <- map[string]any{
+						"type": "notcurrentpage",
+						"page": strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
+						"wiki": dataJson.WikiID,
+					}
+				}
 			}
 
 			if user := dataJson.Performer; user.EditCount < 6 && dataJson.WikiID == "enwiki" {
@@ -216,6 +230,14 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		"prop":    "diff|parsedcomment",
 	}, "none", apiPath)
 
+	for client := range w.wss.Hub.Clients {
+		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
+			Title: streamData.Page.PageTitle,
+			Wiki:  streamData.WikiID,
+		})
+		fmt.Println(client.SeenPages)
+	}
+
 	if err != nil {
 		fmt.Printf("error: %s", err.Error())
 		return
@@ -250,5 +272,5 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		DiffSize:      diffSize,
 		ParsedComment: comment,
 	}
-	w.hub.Broadcast(sendingData)
+	w.wss.Hub.Broadcast(sendingData)
 }

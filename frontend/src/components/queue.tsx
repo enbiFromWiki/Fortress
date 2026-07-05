@@ -5,23 +5,36 @@ import type { WSResponse } from '../types/types';
 import { useEditStore } from '../stores/editstore';
 
 export function Queue() {
-    const rawItems = useEditStore((state) => state.edits);
+    const items = useEditStore((state) => state.edits);
     const currentInd = useEditStore((i) => i.selectedIndex);
-    const items = rawItems.slice(currentInd);
+    const setSelection = useEditStore((i) => i.manuallySetSelection);
+    const visibleItems = items.slice(currentInd);
+    function findAndSetSelection(obj: WSResponse) {
+        const index = items.findIndex((i) => i.newid === obj.newid);
+        if (index === -1) return;
+        setSelection(index);
+    }
 
     return (
         <div className="h-full overflow--y-auto overflow-x-hidden">
-            {items.map((i) => (
-                <QueueItem obj={i} key={i.newid} />
+            {visibleItems.map((i) => (
+                <QueueItem
+                    obj={i}
+                    key={i.newid}
+                    onClick={() => findAndSetSelection(i)}
+                />
             ))}
         </div>
     );
 }
 
-function QueueItem({ obj }: { obj: WSResponse }) {
+function QueueItem({ obj, onClick }: { obj: WSResponse; onClick: () => void }) {
     const wikiPath = `https://${obj.domain}/wiki/`;
     return (
-        <div className="text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative first:border-l-3.5 first:border-l-[#ff0353] p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition">
+        <div
+            onClick={onClick}
+            className="text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative first:after:translate-x-[calc(5%-4px)] first:border-l-4 first:border-l-[#ff0353] p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition"
+        >
             <div className="flex align-center justify-between px-1">
                 <a
                     href={wikiPath + encodeURIComponent(obj.title)}

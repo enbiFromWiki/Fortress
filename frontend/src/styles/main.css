@@ -13,10 +13,10 @@ body {
 @import 'tailwindcss/theme.css';
 
 a {
-    color: #88f;
+    color: #aae;
     transition: color 150ms ease-in-out;
     &:hover {
-        color: #66f;
+        color: #88f;
     }
 }
 
@@ -48,4 +48,10 @@ a {
 
 ::-webkit-scrollbar-corner {
     background: #1e1e1e;
+}
+
+.autocomment,
+.autocomment a {
+    color: #a2a9b1;
+    font-style: italic;
 }

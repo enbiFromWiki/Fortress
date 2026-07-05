@@ -16,7 +16,7 @@ type Server struct {
 	Auth       *auth.AuthService
 	MWClient   *mediawiki.MediaWikiClient
 	ApiService *APIService
-	WSHub      *wshandler.Hub
+	WSService  *wshandler.WebSocketService
 	SSEhandler *eventstream.WMStreamer
 }
 
@@ -24,20 +24,20 @@ func NewServer() *Server {
 	mwClient := mediawiki.New("Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org/w/api.php")
 	authService := auth.New(mwClient)
 	apiClient := NewAPI(mwClient)
-	wsHub := wshandler.New()
-	sseHandler := eventstream.New(wsHub, mwClient)
+	wsService := wshandler.New(mwClient)
+	sseHandler := eventstream.New(wsService, mwClient)
 
 	return &Server{
 		MWClient:   mwClient,
 		Auth:       authService,
 		ApiService: apiClient,
-		WSHub:      wsHub,
+		WSService:  wsService,
 		SSEhandler: sseHandler,
 	}
 }
 
 func (s *Server) Start() {
-	go s.WSHub.Run()
+	go s.WSService.Hub.Run()
 	go s.SSEhandler.StartStream()
 
 	authMiddleware := middleware.Auth(s.Auth)
@@ -58,7 +58,7 @@ func (s *Server) Start() {
 	r.GET("/logout", s.Auth.Logout)
 	r.GET("/auth/callback", s.Auth.Callback)
 	r.GET("/ws", authMiddleware, func(c *gin.Context) {
-		wshandler.ServeWs(s.WSHub, c)
+		wshandler.ServeWs(s.WSService.Hub, c)
 	})
 
 	apiPath := r.Group("/api")

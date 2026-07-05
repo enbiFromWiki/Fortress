@@ -105,7 +105,7 @@ func (a *APIService) Rollback(c *gin.Context) {
 		"token":  csrfToken,
 	}, token.(string), "https://test.wikipedia.org/w/api.php")
 	if err != nil {
-		mediawiki.ReturnError(c, 500, err.Error())
+		util.ReturnError(c, 500, err.Error())
 		return
 	}
 	c.JSON(200, gin.H{

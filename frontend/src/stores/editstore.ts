@@ -9,6 +9,13 @@ type EditStore = {
     addEdit: (edit: WSResponse) => void;
     incrementSelection: () => void;
     decrementSelection: () => void;
+    manuallySetSelection: (index: number) => void;
+    setOldRevisions: (i: WikiPage) => void;
+};
+
+type WikiPage = {
+    title: string;
+    wiki: string;
 };
 
 export const useEditStore = create<EditStore>()(
@@ -36,6 +43,24 @@ export const useEditStore = create<EditStore>()(
             set((state: EditStore) => ({
                 selectedIndex:
                     state.selectedIndex === 0 ? 0 : state.selectedIndex - 1,
+            }));
+        },
+
+        manuallySetSelection: (index: number) => {
+            set({
+                selectedIndex: index,
+            });
+        },
+
+        setOldRevisions: (page: WikiPage) => {
+            set((state: EditStore) => ({
+                edits: state.edits.map((edit: WSResponse) => {
+                    if (edit.wiki === page.wiki && edit.title === page.title) {
+                        return { ...edit, currentRevision: false };
+                    } else {
+                        return edit;
+                    }
+                }),
             }));
         },
     }))

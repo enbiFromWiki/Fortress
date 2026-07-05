@@ -11,7 +11,16 @@ table a {
     text-decoration: underline !important;
 }
 
+.diff-notcurrent * {
+    font-style: italic;
+    color: #bbb !important;
+}
+
 .diff-link {
+    color: #ccc !important;
+}
+
+.diff-notcurrent .diff-link {
     color: #ccc !important;
 }
 

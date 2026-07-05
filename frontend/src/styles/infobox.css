@@ -1,0 +1,16 @@
+/* .infobox-main {
+    display: grid;
+    grid-template-rows: 50% 50%;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        'a b'
+        'c d';
+}
+
+.ib-title {
+    grid-area: a;
+}
+
+.ib-user {
+    grid-area: d;
+} */
