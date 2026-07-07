@@ -10,17 +10,25 @@ export function startWs() {
         const addToPageStore = usePageStore.getState().setPage;
 
         const data: WSResponse = JSON.parse(e.data);
-        if (data.type === 'notcurrentpage') {
-            const changeCurrentRevs = useEditStore.getState().setOldRevisions;
-            changeCurrentRevs({
-                title: data.page!,
-                wiki: data.wiki,
-            });
-            console.log(data);
-            return;
-        }
         console.log(data);
-        addToEditStore({ ...data, currentRevision: true, history: [] });
-        addToPageStore(data.title, data.wiki, { history: data.history });
+        switch (data.type) {
+            case 'notcurrentpage': {
+                const changeCurrentRevs =
+                    useEditStore.getState().setOldRevisions;
+                changeCurrentRevs({
+                    title: data.page!,
+                    wiki: data.wiki,
+                });
+                console.log(data);
+                break;
+            }
+            case 'new': {
+                addToEditStore({ ...data, currentRevision: true, history: [] });
+                addToPageStore(data.title, data.wiki, {
+                    history: data.history,
+                });
+                break;
+            }
+        }
     });
 }

@@ -1,6 +1,7 @@
 package wshandler
 
 import (
+	"fmt"
 	"gateway/mediawiki"
 	"net/http"
 	"time"
@@ -93,7 +94,7 @@ func (c *Client) readPump(mwclient *mediawiki.MediaWikiClient) {
 		if err != nil {
 			break
 		}
-
+		fmt.Printf("received frame: %s\n", msg)
 		handleIncomingMessage(c, msg, mwclient)
 	}
 }

@@ -8,6 +8,7 @@ import (
 )
 
 type SentWSJSON struct {
+	ID          string `json:"id"`
 	Action      string `json:"action"`
 	TargetUser  string `json:"targetuser"`
 	TargetTitle string `json:"targettitle"`
@@ -70,9 +71,18 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 
 			if err != nil {
 				fmt.Println(err.Error())
-				if err.Error() == "badtoken" {
-					panic(err)
+				client.Send <- map[string]any{
+					"type":   "response",
+					"id":     data.ID,
+					"status": "error",
+					"error":  err.Error(),
 				}
+				break
+			}
+			client.Send <- map[string]any{
+				"type":   "response",
+				"status": "success",
+				"id":     data.ID,
 			}
 		}
 	}

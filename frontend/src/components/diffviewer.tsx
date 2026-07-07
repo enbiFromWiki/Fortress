@@ -48,6 +48,14 @@ export function DiffViewer() {
         return replaced;
     }
 
+    if (diff === '') {
+        return (
+            <div className="flex justify-center h-full w-full text-center">
+                <p className="mt-[30vh] text-neutral-400">No difference.</p>
+            </div>
+        );
+    }
+
     if (!diff) {
         return (
             <div className="flex justify-center h-full w-full text-center">

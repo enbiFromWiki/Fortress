@@ -49,7 +49,11 @@ func New(mwClient *mediawiki.MediaWikiClient) *AuthService {
 			"basic",
 			"editpage",
 			"rollback",
+			"highvolume",
+			"createeditmovepage",
+			"editprotected",
 		},
+
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://meta.wikimedia.org/w/rest.php/oauth2/authorize",
 			TokenURL: "https://meta.wikimedia.org/w/rest.php/oauth2/access_token",

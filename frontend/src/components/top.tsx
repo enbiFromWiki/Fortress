@@ -3,6 +3,13 @@ import { fetchCred } from '../util/util';
 import { rollbackCurrentEdit } from '../websocket/sendingfuncs';
 
 export function TopBar() {
+    async function rollback() {
+        try {
+            await rollbackCurrentEdit();
+        } catch {
+            console.log('err above/below right?');
+        }
+    }
     async function logout() {
         const res = await fetchCred('http://localhost:8080/logout');
         if (!res.ok) return;
@@ -15,7 +22,7 @@ export function TopBar() {
         <div className=" flex items-center px-1 h-full justify-around">
             {user && (
                 <div
-                    onClick={rollbackCurrentEdit}
+                    onClick={rollback}
                     className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md"
                 >
                     {user}

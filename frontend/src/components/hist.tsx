@@ -45,7 +45,7 @@ const HistItem = memo(function HistItem({
                             'https://meta.wikimedia.org/wiki/Special:CA/' +
                             encodeURIComponent(obj.user)
                         }
-                        className="text-neutral-300! truncate"
+                        className={`text-neutral-300! truncate ${obj.sameuser ? 'font-bold text-red-400!' : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >

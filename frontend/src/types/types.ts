@@ -32,4 +32,5 @@ export type HistEdit = {
     temp: boolean;
     commenthidden: boolean;
     suppressed: boolean;
+    sameuser?: boolean;
 };
