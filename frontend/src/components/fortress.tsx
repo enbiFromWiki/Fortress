@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { useEditStore } from '../stores/editstore';
 import { Bottom } from './bottom';
 import { Infobox } from './infobox';
+import { History } from './hist';
 
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
@@ -32,7 +33,9 @@ export function Fortress() {
             <div className="middle bg-[#1a1a1a]">
                 <DiffViewer />
             </div>
-            <div className="right bg-[#1a1a1a] border-l border-l-neutral-700"></div>
+            <div className="right bg-[#1a1a1a] border-l border-l-neutral-700">
+                <History />
+            </div>
             <div className="top bg-[#1a1a1a] border-b border-b-neutral-700 border-r border-r-neutral-700">
                 <TopBar />
             </div>

@@ -7,26 +7,12 @@ package api
 // }
 
 import (
-	"encoding/json"
-	"fmt"
-
 	// "gateway/auth"
 	"gateway/mediawiki"
-	"gateway/util"
-
-	"github.com/gin-gonic/gin"
 )
 
 type APIService struct {
 	MWClient *mediawiki.MediaWikiClient
-}
-
-type RollbackTokenJSON struct {
-	Query struct {
-		Tokens struct {
-			Rollbacktoken string `json:"rollbacktoken"`
-		} `json:"tokens"`
-	} `json:"query"`
 }
 
 type RollbackRequest struct {
@@ -54,152 +40,152 @@ func NewAPI(mwClient *mediawiki.MediaWikiClient) *APIService {
 	}
 }
 
-func (a *APIService) Rollback(c *gin.Context) {
-	token, ok := c.Get("accessToken")
-	if !ok {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "Middleware auth failure",
-		})
-		return
-	}
-	postBody := RollbackRequest{}
+// func (a *APIService) Rollback(c *gin.Context) {
+// 	token, ok := c.Get("accessToken")
+// 	if !ok {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "Middleware auth failure",
+// 		})
+// 		return
+// 	}
+// 	postBody := RollbackRequest{}
 
-	if err := c.ShouldBindJSON(&postBody); err != nil {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "Failed to unmarshal POST body",
-		})
-		return
-	}
+// 	if err := c.ShouldBindJSON(&postBody); err != nil {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "Failed to unmarshal POST body",
+// 		})
+// 		return
+// 	}
 
-	rollbackTokenJson := RollbackTokenJSON{}
+// 	rollbackTokenJson := RollbackTokenJSON{}
 
-	res, err := a.MWClient.Get(map[string]string{
-		"action": "query",
-		"meta":   "tokens",
-		"type":   "rollback",
-	}, token.(string), "https://test.wikipedia.org/w/api.php")
-	if err != nil {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "failed to get token",
-			"code":   err.Error(),
-		})
-		return
-	}
+// 	res, err := a.MWClient.Get(map[string]string{
+// 		"action": "query",
+// 		"meta":   "tokens",
+// 		"type":   "rollback",
+// 	}, token.(string), "https://test.wikipedia.org/w/api.php")
+// 	if err != nil {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "failed to get token",
+// 			"code":   err.Error(),
+// 		})
+// 		return
+// 	}
 
-	err = json.Unmarshal(res, &rollbackTokenJson)
-	if err != nil {
-		util.ReturnError(c, 500, "Failed to unmarshal json")
-		return
-	}
+// 	err = json.Unmarshal(res, &rollbackTokenJson)
+// 	if err != nil {
+// 		util.ReturnError(c, 500, "Failed to unmarshal json")
+// 		return
+// 	}
 
-	fmt.Println(string(res))
+// 	fmt.Println(string(res))
 
-	csrfToken := rollbackTokenJson.Query.Tokens.Rollbacktoken
-	res, err = a.MWClient.Post(map[string]string{
-		"action": "rollback",
-		"title":  postBody.Page,
-		"user":   postBody.User,
-		"token":  csrfToken,
-	}, token.(string), "https://test.wikipedia.org/w/api.php")
-	if err != nil {
-		util.ReturnError(c, 500, err.Error())
-		return
-	}
-	c.JSON(200, gin.H{
-		"status": "success",
-		"res":    string(res),
-	})
-}
+// 	csrfToken := rollbackTokenJson.Query.Tokens.Rollbacktoken
+// 	res, err = a.MWClient.Post(map[string]string{
+// 		"action": "rollback",
+// 		"title":  postBody.Page,
+// 		"user":   postBody.User,
+// 		"token":  csrfToken,
+// 	}, token.(string), "https://test.wikipedia.org/w/api.php")
+// 	if err != nil {
+// 		util.ReturnError(c, 500, err.Error())
+// 		return
+// 	}
+// 	c.JSON(200, gin.H{
+// 		"status": "success",
+// 		"res":    string(res),
+// 	})
+// }
 
-func (a *APIService) GetEditCounts(c *gin.Context) {
-	token, ok := c.Get("accessToken")
-	if !ok {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "Middleware auth failure",
-		})
-	}
+// func (a *APIService) GetEditCounts(c *gin.Context) {
+// 	token, ok := c.Get("accessToken")
+// 	if !ok {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "Middleware auth failure",
+// 		})
+// 	}
 
-	wiki := c.Query("w")
-	if wiki == "" {
-		c.JSON(400, gin.H{
-			"status": "error",
-			"error":  "Missing required param: 'w'",
-		})
-		return
-	}
+// 	wiki := c.Query("w")
+// 	if wiki == "" {
+// 		c.JSON(400, gin.H{
+// 			"status": "error",
+// 			"error":  "Missing required param: 'w'",
+// 		})
+// 		return
+// 	}
 
-	wikiApi := wiki + "/w/api.php"
+// 	wikiApi := wiki + "/w/api.php"
 
-	res, err := a.MWClient.Get(map[string]string{
-		"action":  "query",
-		"list":    "users",
-		"usprop":  "editcount",
-		"ususers": c.Param("users"),
-	}, token.(string), wikiApi)
-	if err != nil {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "failed to get users",
-		})
-		return
-	}
-	c.String(200, string(res))
-}
+// 	res, err := a.MWClient.Get(map[string]string{
+// 		"action":  "query",
+// 		"list":    "users",
+// 		"usprop":  "editcount",
+// 		"ususers": c.Param("users"),
+// 	}, token.(string), wikiApi)
+// 	if err != nil {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "failed to get users",
+// 		})
+// 		return
+// 	}
+// 	c.String(200, string(res))
+// }
 
-type ContentResponseJSON struct {
-	Query struct {
-		Pages []struct {
-			Revisions []struct {
-				Slots struct {
-					Main struct {
-						Content string `json:"content"`
-					} `json:"main"`
-				} `json:"slots"`
-			} `json:"revisions"`
-		} `json:"pages"`
-	} `json:"query"`
-}
+// type ContentResponseJSON struct {
+// 	Query struct {
+// 		Pages []struct {
+// 			Revisions []struct {
+// 				Slots struct {
+// 					Main struct {
+// 						Content string `json:"content"`
+// 					} `json:"main"`
+// 				} `json:"slots"`
+// 			} `json:"revisions"`
+// 		} `json:"pages"`
+// 	} `json:"query"`
+// }
 
-func (a *APIService) GetPageContent(c *gin.Context) {
-	token, ok := c.Get("accessToken")
-	if !ok {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "Middleware auth failure",
-		})
-	}
-	wiki := c.Query("w")
-	if wiki == "" {
-		c.JSON(400, gin.H{
-			"status": "error",
-			"error":  "Missing required param: 'w'",
-		})
-		return
-	}
+// func (a *APIService) GetPageContent(c *gin.Context) {
+// 	token, ok := c.Get("accessToken")
+// 	if !ok {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "Middleware auth failure",
+// 		})
+// 	}
+// 	wiki := c.Query("w")
+// 	if wiki == "" {
+// 		c.JSON(400, gin.H{
+// 			"status": "error",
+// 			"error":  "Missing required param: 'w'",
+// 		})
+// 		return
+// 	}
 
-	title := c.Param("page")
+// 	title := c.Param("page")
 
-	wikiApi := wiki + "/w/api.php"
+// 	wikiApi := wiki + "/w/api.php"
 
-	res, err := a.MWClient.Get(map[string]string{
-		"action":  "query",
-		"prop":    "revisions",
-		"titles":  title,
-		"rvprop":  "ids|timestamp|flags|comment|user|content",
-		"rvslots": "main",
-	}, token.(string), wikiApi)
+// 	res, err := a.MWClient.Get(map[string]string{
+// 		"action":  "query",
+// 		"prop":    "revisions",
+// 		"titles":  title,
+// 		"rvprop":  "ids|timestamp|flags|comment|user|content",
+// 		"rvslots": "main",
+// 	}, token.(string), wikiApi)
 
-	if err != nil {
-		c.JSON(500, gin.H{
-			"status": "error",
-			"error":  "failed to get content",
-		})
-		return
-	}
+// 	if err != nil {
+// 		c.JSON(500, gin.H{
+// 			"status": "error",
+// 			"error":  "failed to get content",
+// 		})
+// 		return
+// 	}
 
-	c.String(200, string(res))
-}
+// 	c.String(200, string(res))
+// }

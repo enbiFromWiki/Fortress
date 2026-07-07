@@ -58,7 +58,7 @@ func (s *Server) Start() {
 	r.GET("/logout", s.Auth.Logout)
 	r.GET("/auth/callback", s.Auth.Callback)
 	r.GET("/ws", authMiddleware, func(c *gin.Context) {
-		wshandler.ServeWs(s.WSService.Hub, c)
+		wshandler.ServeWs(s.WSService, c)
 	})
 
 	apiPath := r.Group("/api")
@@ -67,8 +67,6 @@ func (s *Server) Start() {
 		v1 := apiPath.Group("/v1")
 		{
 			//v1.GET("/editcount/:users" /*api.GetEditCounts*/, s.ApiService.GetEditCounts)
-			v1.POST("/rollback", s.ApiService.Rollback)
-			v1.GET("/editcount/:page", s.ApiService.GetPageContent)
 			v1.GET("/me", s.Auth.Me)
 		}
 	}

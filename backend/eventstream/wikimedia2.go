@@ -109,6 +109,28 @@ type WMEventStream struct {
 	} `json:"meta"`
 }
 
+type HistoryJSON struct {
+	Query struct {
+		Pages []struct {
+			Title     string        `json:"title"`
+			Revisions []HistoryEdit `json:"revisions"`
+		} `json:"pages"`
+	} `json:"query"`
+}
+
+type HistoryEdit struct {
+	Revid         int       `json:"revid"`
+	Parentid      int       `json:"parentid"`
+	Minor         bool      `json:"minor"`
+	User          string    `json:"user"`
+	Timestamp     time.Time `json:"timestamp"`
+	Parsedcomment string    `json:"parsedcomment,omitempty"`
+	Tags          []string  `json:"tags"`
+	Temp          bool      `json:"temp,omitempty"`
+	Commenthidden bool      `json:"commenthidden,omitempty"`
+	Suppressed    bool      `json:"suppressed,omitempty"`
+}
+
 type WMStreamer struct {
 	// MWClient     *mediawiki.MediaWikiClient
 	wss       *wshandler.WebSocketService
@@ -160,7 +182,7 @@ func (w *WMStreamer) StartStream() {
 				}
 			}
 
-			if user := dataJson.Performer; user.EditCount < 6 && dataJson.WikiID == "enwiki" {
+			if user := dataJson.Performer; user.EditCount > 6 && dataJson.WikiID == "testwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
@@ -196,15 +218,16 @@ type WSUser struct {
 }
 
 type WSSentJSON struct {
-	User          WSUser `json:"user"`
-	Title         string `json:"title"`
-	DiffHTML      string `json:"diffhtml"`
-	NewID         int64  `json:"newid"`
-	OldID         int64  `json:"oldid"`
-	Wiki          string `json:"wiki"`
-	WikiDomain    string `json:"domain"`
-	DiffSize      int    `json:"diffsize"`
-	ParsedComment string `json:"parsedcomment"`
+	User          WSUser        `json:"user"`
+	Title         string        `json:"title"`
+	DiffHTML      string        `json:"diffhtml"`
+	NewID         int64         `json:"newid"`
+	OldID         int64         `json:"oldid"`
+	Wiki          string        `json:"wiki"`
+	WikiDomain    string        `json:"domain"`
+	DiffSize      int           `json:"diffsize"`
+	ParsedComment string        `json:"parsedcomment"`
+	History       []HistoryEdit `json:"history"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
@@ -224,11 +247,40 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	apiPath := "https://" + streamData.Meta.Domain + "/w/api.php"
 
 	res, err := w.mwClient.Get(map[string]string{
-		"action":  "compare",
-		"fromrev": fmt.Sprintf("%v", oldid),
-		"torev":   fmt.Sprintf("%v", newid),
-		"prop":    "diff|parsedcomment",
+		"action":  "query",
+		"prop":    "revisions",
+		"titles":  streamData.Page.PageTitle,
+		"rvprop":  "ids|timestamp|flags|user|tags|parsedcomment",
+		"rvlimit": "15",
 	}, "none", apiPath)
+
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+
+	var histData HistoryJSON
+	json.Unmarshal(res, &histData)
+	fmt.Println("HIST:", string(res))
+
+	history := histData.Query.Pages[0].Revisions
+	fmt.Println("HIST: ", history)
+	if history[0].Revid != int(streamData.Revision.RevID) {
+		return
+	}
+
+	firstRevisionNotByUser := -1
+
+	for _, edit := range history {
+		if edit.User != streamData.Performer.UserText {
+			firstRevisionNotByUser = edit.Revid
+			break
+		}
+	}
+
+	if firstRevisionNotByUser == -1 {
+		firstRevisionNotByUser = history[len(history)-1].Revid
+	}
 
 	for client := range w.wss.Hub.Clients {
 		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
@@ -238,13 +290,18 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		fmt.Println(client.SeenPages)
 	}
 
+	var data MWCompareJSON
+
+	res, err = w.mwClient.Get(map[string]string{
+		"action":  "compare",
+		"fromrev": fmt.Sprintf("%v", oldid),
+		"torev":   fmt.Sprintf("%v", newid),
+		"prop":    "diff|parsedcomment",
+	}, "none", apiPath)
 	if err != nil {
 		fmt.Printf("error: %s", err.Error())
 		return
 	}
-
-	var data MWCompareJSON
-
 	err = json.Unmarshal(res, &data)
 	if err != nil {
 		fmt.Printf("error: %s", err.Error())
@@ -271,6 +328,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		WikiDomain:    streamData.Meta.Domain,
 		DiffSize:      diffSize,
 		ParsedComment: comment,
+		History:       history,
 	}
 	w.wss.Hub.Broadcast(sendingData)
 }

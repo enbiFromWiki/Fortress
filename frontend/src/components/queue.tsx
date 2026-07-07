@@ -3,6 +3,7 @@ import CommentSvg from '../assets/comment.svg?react';
 import { calculateDiffColour } from '../util/util';
 import type { WSResponse } from '../types/types';
 import { useEditStore } from '../stores/editstore';
+import { memo } from 'react';
 
 export function Queue() {
     const items = useEditStore((state) => state.edits);
@@ -28,7 +29,13 @@ export function Queue() {
     );
 }
 
-function QueueItem({ obj, onClick }: { obj: WSResponse; onClick: () => void }) {
+const QueueItem = memo(function QueueItem({
+    obj,
+    onClick,
+}: {
+    obj: WSResponse;
+    onClick: () => void;
+}) {
     const wikiPath = `https://${obj.domain}/wiki/`;
     return (
         <div
@@ -83,4 +90,4 @@ function QueueItem({ obj, onClick }: { obj: WSResponse; onClick: () => void }) {
             </div>
         </div>
     );
-}
+});

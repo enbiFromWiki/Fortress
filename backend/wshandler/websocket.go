@@ -82,7 +82,7 @@ func (h *Hub) Run() {
 	}
 }
 
-func (c *Client) readPump() {
+func (c *Client) readPump(mwclient *mediawiki.MediaWikiClient) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -94,7 +94,7 @@ func (c *Client) readPump() {
 			break
 		}
 
-		handleIncomingMessage(c, msg)
+		handleIncomingMessage(c, msg, mwclient)
 	}
 }
 
@@ -109,7 +109,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func ServeWs(hub *Hub, c *gin.Context) {
+func ServeWs(w *WebSocketService, c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
@@ -120,7 +120,7 @@ func ServeWs(hub *Hub, c *gin.Context) {
 
 	client := &Client{
 		conn:      conn,
-		hub:       hub,
+		hub:       w.Hub,
 		Send:      make(chan any),
 		token:     token.(string),
 		SeenPages: []WikiPage{},
@@ -131,13 +131,13 @@ func ServeWs(hub *Hub, c *gin.Context) {
 
 	time.AfterFunc(time.Until(expiry.(time.Time)), func() {
 		deadline := time.Now().Add(time.Second)
-		hub.unregister <- client
+		w.Hub.unregister <- client
 		client.conn.WriteControl(ws.CloseMessage, ws.FormatCloseMessage(ws.ClosePolicyViolation, "token expired"), deadline)
 		client.conn.Close()
 	})
 
 	go client.writePump()
-	go client.readPump()
+	go client.readPump(w.MWClient)
 }
 
 func (h *Hub) Broadcast(msg any) {

@@ -1,14 +1,18 @@
 import { useEffect, useRef } from 'react';
 import '../styles/diff.css';
 import { useEditStore } from '../stores/editstore';
+import { useShallow } from 'zustand/shallow';
 
 export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
-    const diff = useEditStore(
-        (state) => state.edits[state.selectedIndex]?.diffhtml
-    );
-    const isCurrent = useEditStore(
-        (state) => state.edits[state.selectedIndex]?.currentRevision
+    const { diff, isCurrent } = useEditStore(
+        useShallow((state) => {
+            const edit = state.edits[state.selectedIndex];
+            return {
+                diff: edit?.diffhtml,
+                isCurrent: edit?.currentRevision,
+            };
+        })
     );
 
     useEffect(() => {

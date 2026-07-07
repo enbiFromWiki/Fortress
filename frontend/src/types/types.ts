@@ -7,6 +7,7 @@ export type WSResponse = {
         usergroups: string[];
         userage: string;
     };
+    type?: string;
     title: string;
     diffhtml: string;
     newid: number;
@@ -16,4 +17,19 @@ export type WSResponse = {
     diffsize: number;
     parsedcomment: string;
     currentRevision: boolean;
+    history: HistEdit[];
+    page?: string;
+};
+
+export type HistEdit = {
+    revid: number;
+    parentid: number;
+    minor: boolean;
+    user: string;
+    timestamp: string | number;
+    parsedcomment: string;
+    tags: string[];
+    temp: boolean;
+    commenthidden: boolean;
+    suppressed: boolean;
 };

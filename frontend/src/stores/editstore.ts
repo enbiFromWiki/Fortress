@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { WSResponse } from '../types/types';
 import { wsresponse, wsresponse2 } from '../testvalues';
 import { devtools } from 'zustand/middleware';
+import { type WikiPage } from './pagestore';
 
 type EditStore = {
     edits: WSResponse[];
@@ -11,11 +12,6 @@ type EditStore = {
     decrementSelection: () => void;
     manuallySetSelection: (index: number) => void;
     setOldRevisions: (i: WikiPage) => void;
-};
-
-type WikiPage = {
-    title: string;
-    wiki: string;
 };
 
 export const useEditStore = create<EditStore>()(
