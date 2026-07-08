@@ -28,10 +28,9 @@ socket.subscribe((e) => {
     }
 });
 
-export async function rollbackCurrentEdit(): Promise<Record<
-    string,
-    unknown
-> | null> {
+export async function rollbackCurrentEdit(
+    summary: string
+): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
     const edit = store.edits[store.selectedIndex];
     if (!edit) return null;
@@ -40,8 +39,7 @@ export async function rollbackCurrentEdit(): Promise<Record<
         targetuser: edit.user.username,
         targettitle: edit.title,
         targetdomain: 'test.wikipedia.org',
-        summary: 'test rollback',
-        token: '23a231cb275475e08fefef25358f37ba6a4d231e+\\',
+        summary: summary,
     };
     console.log(obj);
     const res = await sendEditRequest(obj);
