@@ -5,7 +5,7 @@ import { rollbackCurrentEdit } from '../websocket/sendingfuncs';
 export function TopBar() {
     async function rollback() {
         try {
-            await rollbackCurrentEdit();
+            await rollbackCurrentEdit('non-constructive edits');
         } catch {
             console.log('err above/below right?');
         }
