@@ -5,97 +5,59 @@ import { devtools } from 'zustand/middleware';
 import { type WikiPage } from './pagestore';
 
 type EditStore = {
-    selectedEdit: WSResponse | null;
-    futureEdits: WSResponse[];
-    pastEdits: WSResponse[];
+    edits: WSResponse[];
+    selectedIndex: number;
     addEdit: (edit: WSResponse) => void;
     incrementSelection: () => void;
     decrementSelection: () => void;
-    //manuallySetSelection: (index: number) => void;
+    manuallySetSelection: (index: number) => void;
     setOldRevisions: (i: WikiPage) => void;
 };
 
 export const useEditStore = create<EditStore>()(
     devtools((set) => ({
-        futureEdits: [wsresponse, wsresponse2],
-        pastEdits: [],
-        selectedEdit: null,
-        addEdit: (edit: WSResponse) => {
-            set((state) => {
-                const isQueueEmpty =
-                    state.selectedEdit === null &&
-                    state.futureEdits.length === 0;
+        edits: [wsresponse, wsresponse2],
 
-                return {
-                    selectedEdit: isQueueEmpty ? edit : state.selectedEdit,
-                    futureEdits: isQueueEmpty
-                        ? state.futureEdits
-                        : [...state.futureEdits, edit],
-                };
-            });
+        selectedIndex: 0,
+        addEdit: (edit: WSResponse) => {
+            set((state: EditStore) => ({
+                edits: [...state.edits, edit],
+                selectedIndex:
+                    state.edits.length === 1 ? 0 : state.selectedIndex,
+            }));
         },
         incrementSelection: () => {
-            set((state) => {
-                if (
-                    state.selectedEdit === null &&
-                    state.futureEdits.length === 0
-                )
-                    return {};
-                return {
-                    pastEdits: state.selectedEdit
-                        ? [...state.pastEdits, state.selectedEdit]
-                        : state.pastEdits,
-                    selectedEdit: state.futureEdits[0] ?? null,
-                    futureEdits: state.futureEdits.slice(1),
-                };
-            });
+            set((state: EditStore) => ({
+                selectedIndex:
+                    state.selectedIndex > state.edits.length - 1
+                        ? state.selectedIndex
+                        : state.selectedIndex + 1,
+            }));
         },
 
         decrementSelection: () => {
-            set((state) => {
-                if (state.pastEdits.length === 0) return {};
-                return {
-                    futureEdits: state.selectedEdit
-                        ? [state.selectedEdit, ...state.futureEdits]
-                        : state.futureEdits,
-                    selectedEdit:
-                        state.pastEdits[state.pastEdits.length - 1] ?? null,
-                    pastEdits: state.pastEdits.slice(0, -1),
-                };
+            set((state: EditStore) => ({
+                selectedIndex:
+                    state.selectedIndex === 0 ? 0 : state.selectedIndex - 1,
+            }));
+        },
+
+        manuallySetSelection: (index: number) => {
+            set({
+                selectedIndex: index,
             });
         },
 
-        // manuallySetSelection: (index: number) => {
-        //     set({
-        //         selectedEdit: index,
-        //     });
-        // },
-
         setOldRevisions: (page: WikiPage) => {
-            set((state: EditStore) => {
-                const checkifEqual = (e: WSResponse) =>
-                    e.title === page.title && e.wiki === page.wiki;
-                const newHist = state.pastEdits.map((i) => ({
-                    ...i,
-                    currentRevision: checkifEqual(i)
-                        ? false
-                        : i.currentRevision,
-                }));
-                const curr = state.selectedEdit;
-                const newCurr = curr
-                    ? checkifEqual(curr)
-                        ? { ...curr, currentRevision: false }
-                        : curr
-                    : null;
-                const newFuture = state.futureEdits.filter(
-                    (i) => !checkifEqual(i)
-                );
-                return {
-                    pastEdits: newHist,
-                    currentEdit: newCurr,
-                    futureEdits: newFuture,
-                };
-            });
+            set((state: EditStore) => ({
+                edits: state.edits.map((edit: WSResponse) => {
+                    if (edit.wiki === page.wiki && edit.title === page.title) {
+                        return { ...edit, currentRevision: false };
+                    } else {
+                        return edit;
+                    }
+                }),
+            }));
         },
     }))
 );

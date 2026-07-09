@@ -7,7 +7,7 @@ import { memo } from 'react';
 
 export function History() {
     const pageKey = useEditStore((state) => {
-        const edit = state.selectedEdit;
+        const edit = state.edits[state.selectedIndex];
         return edit ? `${edit.title}|${edit.wiki}` : undefined;
     });
     const history = usePageStore((i) => i.pages[pageKey ?? -1]?.history);
