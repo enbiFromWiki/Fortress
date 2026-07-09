@@ -51,7 +51,7 @@ func (w *WMStreamer) StartStream() {
 					Wiki:  dataJson.WikiID,
 				}) {
 					client.Send <- map[string]any{
-						"type": "notcurrentpage",
+						"type": "revchange",
 						"page": strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
 						"wiki": dataJson.WikiID,
 					}
