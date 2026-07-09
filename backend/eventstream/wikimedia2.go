@@ -58,7 +58,7 @@ func (w *WMStreamer) StartStream() {
 				}
 			}
 
-			if user := dataJson.Performer; user.EditCount > 6 && dataJson.WikiID == "testwiki" {
+			if user := dataJson.Performer; user.EditCount > 10 && dataJson.WikiID == "enwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
