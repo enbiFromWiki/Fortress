@@ -29,18 +29,17 @@ socket.subscribe((e) => {
 });
 
 export async function rollbackCurrentEdit(
-    reason: string
+    summary: string
 ): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
     const edit = store.edits[store.selectedIndex];
     if (!edit) return null;
-    const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`;
     const obj = {
         action: 'rollback',
         targetuser: edit.user.username,
         targettitle: edit.title,
         targetdomain: 'test.wikipedia.org',
-        summary,
+        summary: summary,
     };
     console.log(obj);
     const res = await sendEditRequest(obj);

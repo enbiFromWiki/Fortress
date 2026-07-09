@@ -12,7 +12,7 @@ export function startWs() {
         const data: WSResponse = JSON.parse(e.data);
         console.log(data);
         switch (data.type) {
-            case 'revchange': {
+            case 'notcurrentpage': {
                 const changeCurrentRevs =
                     useEditStore.getState().setOldRevisions;
                 changeCurrentRevs({

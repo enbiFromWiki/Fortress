@@ -14,10 +14,8 @@ export class Socket {
             });
         };
 
-        this.socket.onclose = (e) => {
+        this.socket.onclose = () => {
             this.ready = false;
-            console.log('closed ws');
-            console.log(e.reason);
         };
     }
 
