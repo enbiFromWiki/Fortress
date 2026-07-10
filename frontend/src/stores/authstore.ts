@@ -6,6 +6,8 @@ type AuthStore = {
     status: 'unknown' | 'unauthorized' | 'forbidden' | 'authorized';
     init: () => Promise<void>;
     logout: () => Promise<void>;
+    isConnected: boolean;
+    setConnected: (i: boolean) => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -61,6 +63,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
             user: null,
             status: 'unauthorized',
+        });
+    },
+
+    isConnected: false,
+    setConnected: (i) => {
+        set({
+            isConnected: i,
         });
     },
 }));

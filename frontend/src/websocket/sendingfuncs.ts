@@ -36,11 +36,12 @@ export async function rollbackCurrentEdit(
     if (!edit) return null;
     const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`;
     const obj = {
-        action: 'rollback',
+        action: 'rollandwarn',
         targetuser: edit.user.username,
         targettitle: edit.title,
         targetdomain: 'test.wikipedia.org',
         summary,
+        warntp: 'uw-vandalism',
     };
     console.log(obj);
     const res = await sendEditRequest(obj);

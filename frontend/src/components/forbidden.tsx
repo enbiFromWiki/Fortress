@@ -11,7 +11,7 @@ export function Forbidden() {
                     <>
                         <br></br>You can apply for rollback on the English
                         Wikipedia at{' '}
-                        <a href="https://en.wikipedia.org/wiki/WP:PERM/RB">
+                        <a href="https://test.wikipedia.org/wiki/WP:PERM/RB">
                             WP:PERM/RB
                         </a>
                         .

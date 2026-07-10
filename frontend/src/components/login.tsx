@@ -16,7 +16,7 @@ export function Login() {
                     <>
                         <br></br>You can apply for rollback on the English
                         Wikipedia at{' '}
-                        <a href="https://en.wikipedia.org/wiki/WP:PERM/RB">
+                        <a href="https://test.wikipedia.org/wiki/WP:PERM/RB">
                             WP:PERM/RB
                         </a>
                         .
@@ -26,7 +26,7 @@ export function Login() {
             <p className="pt-10">
                 Brought to you by{' '}
                 <a
-                    href="https://en.wikipedia.org/User:enbi"
+                    href="https://test.wikipedia.org/User:enbi"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
