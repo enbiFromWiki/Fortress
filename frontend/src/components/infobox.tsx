@@ -5,7 +5,7 @@ import UserSvg from '../assets/user.svg?react';
 import CommentSvg from '../assets/comment.svg?react';
 
 export function Infobox() {
-    const edit = useEditStore((i) => i.edits[i.selectedIndex]);
+    const edit = useEditStore((i) => i.selectedEdit);
     if (!edit) return null;
 
     return (

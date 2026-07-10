@@ -19,6 +19,7 @@ export type WSResponse = {
     currentRevision: boolean;
     history: HistEdit[];
     page?: string;
+    revid?: number;
 };
 
 export type HistEdit = {

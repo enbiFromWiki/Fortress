@@ -8,6 +8,7 @@ import { useEditStore } from '../stores/editstore';
 import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
+import { rollbackCurrentEdit } from '../websocket/sendingfuncs';
 
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
@@ -22,6 +23,9 @@ export function Fortress() {
             }
             if (e.key === '[') {
                 decrement();
+            }
+            if (e.key === 'q') {
+                rollbackCurrentEdit('non-constructive edits');
             }
         });
     }, [increment, decrement]);

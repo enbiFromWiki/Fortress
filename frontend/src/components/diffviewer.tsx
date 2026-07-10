@@ -7,7 +7,7 @@ export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
     const { diff, isCurrent } = useEditStore(
         useShallow((state) => {
-            const edit = state.edits[state.selectedIndex];
+            const edit = state.selectedEdit;
             return {
                 diff: edit?.diffhtml,
                 isCurrent: edit?.currentRevision,
