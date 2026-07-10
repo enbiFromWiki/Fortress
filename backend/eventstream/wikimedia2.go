@@ -162,13 +162,9 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		firstRevisionNotByUser = history[len(history)-1].Revid
 	}
 
-	for client := range w.wss.Hub.Clients {
-		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
-			Title: streamData.Page.PageTitle,
-			Wiki:  streamData.WikiID,
-		})
-		fmt.Println(client.SeenPages)
-	}
+	user := streamData.Performer
+	userEC := user.EditCount
+	wikiID := streamData.WikiID
 
 	var data MWCompareJSON
 
@@ -211,5 +207,14 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		History:       history,
 		Type:          "new",
 	}
-	w.wss.Hub.Broadcast(sendingData)
+	for client := range w.wss.Hub.Clients {
+		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
+			Title: streamData.Page.PageTitle,
+			Wiki:  streamData.WikiID,
+		})
+		fmt.Println(client.SeenPages)
+		if slices.Contains(client.Wikis, wikiID) && userEC <= client.MaxEditCount {
+			client.Send <- sendingData
+		}
+	}
 }

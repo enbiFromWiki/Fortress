@@ -136,20 +136,6 @@ func NewAPI(mwClient *mediawiki.MediaWikiClient) *APIService {
 // 	c.String(200, string(res))
 // }
 
-// type ContentResponseJSON struct {
-// 	Query struct {
-// 		Pages []struct {
-// 			Revisions []struct {
-// 				Slots struct {
-// 					Main struct {
-// 						Content string `json:"content"`
-// 					} `json:"main"`
-// 				} `json:"slots"`
-// 			} `json:"revisions"`
-// 		} `json:"pages"`
-// 	} `json:"query"`
-// }
-
 // func (a *APIService) GetPageContent(c *gin.Context) {
 // 	token, ok := c.Get("accessToken")
 // 	if !ok {

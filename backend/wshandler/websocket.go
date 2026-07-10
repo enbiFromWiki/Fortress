@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"gateway/mediawiki"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +24,14 @@ type WikiPage struct {
 }
 
 type Client struct {
-	conn      *ws.Conn
-	Send      chan any //struct
-	hub       *Hub
-	token     string
-	SeenPages []WikiPage
-	paused    bool
+	conn         *ws.Conn
+	Send         chan any //struct
+	hub          *Hub
+	token        string
+	SeenPages    []WikiPage
+	paused       bool
+	MaxEditCount int
+	Wikis        []string
 }
 
 type Hub struct {
@@ -116,16 +120,21 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 		return
 	}
 
+	maxEditCount, _ := strconv.Atoi(c.Query("maxcount"))
+	wikis := strings.Split(c.Query("wikis"), ",")
+
 	token, _ := c.Get("accessToken")
 	expiry, _ := c.Get("tokenExpiry")
 
 	client := &Client{
-		conn:      conn,
-		hub:       w.Hub,
-		Send:      make(chan any),
-		token:     token.(string),
-		SeenPages: []WikiPage{},
-		paused:    false,
+		conn:         conn,
+		hub:          w.Hub,
+		Send:         make(chan any),
+		token:        token.(string),
+		SeenPages:    []WikiPage{},
+		paused:       false,
+		MaxEditCount: maxEditCount,
+		Wikis:        wikis,
 	}
 
 	client.hub.register <- client
