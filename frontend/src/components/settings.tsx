@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useSettingsStore, type Settings } from '../stores/settingsstore';
+import { socket } from '../websocket/websocket';
 
 export function Settings() {
     const setOpen = useSettingsStore((i) => i.setSettingsOpen);
@@ -7,9 +8,15 @@ export function Settings() {
     const globalSettings = useSettingsStore((i) => i.settings);
     const [settings, setSettings] = useState<Settings>(globalSettings);
     const [wikiInput, setWikiInput] = useState<string>('');
+
+    function save(i: Settings) {
+        localStorage.setItem('fortress-settings', JSON.stringify(i));
+        socket.reconnect(Number(settings.maxEditCount), settings.wikis);
+    }
     if (!open) return null;
     function clickOutsideExit(e: MouseEvent) {
         if (e.target !== e.currentTarget) return;
+        save(settings);
         setOpen(false);
     }
 
@@ -31,7 +38,10 @@ export function Settings() {
                         Settings
                     </div>
                     <div
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                            setOpen(false);
+                            save(settings);
+                        }}
                         className="text-sm center h-full p-2 hover:bg-red-500 hover:text-white transition text-neutral-300"
                     >
                         Exit
@@ -52,6 +62,16 @@ export function Settings() {
                                 className="p-1 border border-neutral-800 rounded-lg transition duration-75 text-neutral-200 outline-[#0000] outline-2 focus:outline-[#ff0353]"
                                 name="editcount"
                                 id="ec"
+                                value={settings.maxEditCount}
+                                onChange={(e) =>
+                                    setSettings((i) => ({
+                                        ...i,
+                                        maxEditCount:
+                                            e.target.value !== ''
+                                                ? Number(e.target.value)
+                                                : '',
+                                    }))
+                                }
                             />
                         </div>
                         <div className="wikis mt-2">

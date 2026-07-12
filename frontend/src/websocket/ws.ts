@@ -9,20 +9,26 @@ export class Socket {
     private reconnectTimeout?: number;
     private manuallyClosed = false;
     private listeners: ((e: MessageEvent) => void)[] = [];
+    private maxcount: number;
+    private wikis: string[];
 
-    private url =
-        'ws://localhost:8080/ws?maxcount=99999&wikis=test2wiki,testwiki,enwiki';
+    // private url =
+    //     'ws://localhost:8080/ws?maxcount=99999&wikis=test2wiki,testwiki,enwiki';
 
     private setConnected: (i: boolean) => void;
 
     constructor(maxcount: number, wikis: string[]) {
-        this.url = `ws://localhost:8080/ws?maxcount=${maxcount}&wikis=${wikis.join(',')}`;
+        this.maxcount = maxcount;
+        this.wikis = wikis;
+        //this.url = `ws://localhost:8080/ws?maxcount=${this.maxcount}&wikis=${this.wikis.join(',')}`;
         this.setConnected = useAuthStore.getState().setConnected;
         this.connect();
     }
 
     private connect() {
-        this.socket = new WebSocket(this.url);
+        this.socket = new WebSocket(
+            `ws://localhost:8080/ws?maxcount=${this.maxcount}&wikis=${this.wikis.join(',')}`
+        );
 
         this.socket.onopen = () => {
             console.log('Connected');
@@ -57,6 +63,16 @@ export class Socket {
                 this.scheduleReconnect();
             }
         };
+    }
+
+    reconnect(maxcount: number, wikis: string[]) {
+        this.maxcount = maxcount;
+        this.wikis = wikis;
+
+        this.reconnectAttempts = 0;
+        this.manuallyClosed = false;
+
+        this.socket?.close();
     }
 
     private scheduleReconnect() {

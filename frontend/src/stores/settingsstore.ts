@@ -7,7 +7,7 @@ type SettingsStore = {
 };
 
 export type Settings = {
-    maxEditCount: number;
+    maxEditCount: number | '';
     wikis: string[];
 };
 

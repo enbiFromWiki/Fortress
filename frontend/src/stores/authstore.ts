@@ -8,12 +8,14 @@ type AuthStore = {
     logout: () => Promise<void>;
     isConnected: boolean;
     setConnected: (i: boolean) => void;
+    rollbackWikis: string[];
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
     loading: true,
     status: 'unknown',
+    rollbackWikis: [],
 
     init: async () => {
         try {
@@ -47,7 +49,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
                 user,
                 loading: false,
                 status: 'authorized',
+                rollbackWikis: data.rollbackWikis ?? [],
             });
+            console.log(useAuthStore.getState().rollbackWikis);
+            console.log(data);
         } catch {
             set({
                 user: null,
