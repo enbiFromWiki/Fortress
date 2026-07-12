@@ -24,6 +24,10 @@ func (c *MediaWikiClient) GetSinglePageContent(title string, wiki string) (strin
 		return "", false, err
 	}
 
+	if data.Query.Pages[0].Missing {
+		return "", false, nil
+	}
+
 	content := data.Query.Pages[0].Revisions[0].Slots.Main.Content
 	return content, content != "", nil
 }
@@ -65,7 +69,7 @@ func (c *MediaWikiClient) Edit(page string, wiki string, tok string, content str
 
 func (c *MediaWikiClient) ReportToEnwikiAIV(user string, reason string, tok string) (bool, error) {
 	aivPage := "Wikipedia:Administrator intervention against vandalism"
-	content, exists, err := c.GetSinglePageContent(aivPage, "test.wikipedia.org")
+	content, exists, err := c.GetSinglePageContent(aivPage, "en.wikipedia.org")
 	if err != nil {
 		return false, err
 	}
@@ -84,7 +88,7 @@ func (c *MediaWikiClient) ReportToEnwikiAIV(user string, reason string, tok stri
 		return false, nil
 	}
 
-	err = c.Edit(aivPage, "test.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting ([[m:Fortress|Fortress]])", true)
+	err = c.Edit(aivPage, "en.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting [[Special:Contributions/"+user+"|"+user+"]] ([[m:Fortress|Fortress]])", true)
 	if err != nil {
 		return false, err
 	}

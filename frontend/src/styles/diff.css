@@ -20,6 +20,11 @@ table a {
     color: #ccc !important;
 }
 
+.mw-diff-movedpara-right,
+.mw-diff-movedpara-left {
+    display: none;
+}
+
 .diff-notcurrent .diff-link {
     color: #ccc !important;
 }

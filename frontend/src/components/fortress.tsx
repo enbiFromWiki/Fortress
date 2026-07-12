@@ -8,7 +8,10 @@ import { useEditStore } from '../stores/editstore';
 import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
-import { rollbackCurrentEdit } from '../websocket/sendingfuncs';
+import {
+    rollAndWarnCurrentEdit as rollAndWarnCurrentEdit,
+    watchCurrentUser,
+} from '../websocket/sendingfuncs';
 
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
@@ -25,7 +28,19 @@ export function Fortress() {
                 decrement();
             }
             if (e.key === 'q') {
-                rollbackCurrentEdit('non-constructive edits');
+                rollAndWarnCurrentEdit('non-constructive edits', 'vandalism');
+            }
+            if (e.key === 'd') {
+                rollAndWarnCurrentEdit('disruptive edits', 'disruptive');
+            }
+            if (e.key === 'u') {
+                rollAndWarnCurrentEdit('unsourced additions', 'unsourced');
+            }
+            if (e.key === 't') {
+                rollAndWarnCurrentEdit('test edit', 'test');
+            }
+            if (e.key === 'w') {
+                watchCurrentUser();
             }
         });
     }, [increment, decrement]);

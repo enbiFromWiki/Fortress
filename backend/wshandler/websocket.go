@@ -32,6 +32,7 @@ type Client struct {
 	paused       bool
 	MaxEditCount int
 	Wikis        []string
+	WatchedUsers map[string]bool
 }
 
 type Hub struct {
@@ -135,6 +136,7 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 		paused:       false,
 		MaxEditCount: maxEditCount,
 		Wikis:        wikis,
+		WatchedUsers: map[string]bool{},
 	}
 
 	client.hub.register <- client

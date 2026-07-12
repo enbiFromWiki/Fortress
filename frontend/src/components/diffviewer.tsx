@@ -5,10 +5,11 @@ import { useShallow } from 'zustand/shallow';
 
 export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
-    const { diff, isCurrent } = useEditStore(
+    const { diff, isCurrent, domain } = useEditStore(
         useShallow((state) => {
             const edit = state.selectedEdit;
             return {
+                domain: edit?.domain,
                 diff: edit?.diffhtml,
                 isCurrent: edit?.currentRevision,
             };
@@ -21,29 +22,27 @@ export function DiffViewer() {
 
         const firstIns = table.querySelector('ins, del');
 
-        if (firstIns) {
-            firstIns.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-            });
-        }
-    }, []);
+        firstIns?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        });
+    }, [diff]);
 
-    function formatDiff(diff: string) {
+    function formatDiff(diff: string, domain: string) {
         const replaced = diff
             .replace(
-                /\[\[([^|\]]+)\]\]/g,
-                (_, group) =>
-                    `[[<a href="${encodeURIComponent(group)}" target="_blank" class="diff-link">${group}</a>]]`
+                /(https?:\/\/[^\s|]+)/g,
+                '<a href="$1" target="_blank" class="diff-link">$1</a>'
             )
             .replace(
                 /\[\[([^|\]]+)\|([^|\]]+)\]\]/g,
                 (_, group, group2) =>
-                    `[[<a href="${encodeURIComponent(group)}" target="_blank" class="diff-link">${group}</a>|${group2}]]`
+                    `[[<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group}</a>|${group2}]]`
             )
             .replace(
-                /(https?:\/\/[^\s|]+)/g,
-                '<a href="$1" target="_blank" class="diff-link">$1</a>'
+                /\[\[([^|\]]+)\]\]/g,
+                (_, group) =>
+                    `[[<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group}</a>]]`
             );
         return replaced;
     }
@@ -56,7 +55,7 @@ export function DiffViewer() {
         );
     }
 
-    if (!diff) {
+    if (!diff || !domain) {
         return (
             <div className="flex justify-center h-full w-full text-center">
                 <p className="mt-[30vh] text-neutral-400">
@@ -80,7 +79,7 @@ export function DiffViewer() {
                     <tbody
                         ref={tableRef}
                         dangerouslySetInnerHTML={{
-                            __html: formatDiff(diff),
+                            __html: formatDiff(diff, domain),
                         }}
                     ></tbody>
                 </table>

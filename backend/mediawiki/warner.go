@@ -56,7 +56,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 	warningLevel += 1
 
 	if warningLevel > 4 {
-		if wiki == "test.wikipedia.org" {
+		if wiki == "en.wikipedia.org" {
 			ok, err := c.ReportToEnwikiAIV(user, "Vandalism past final warning", tok)
 			if err != nil {
 				return Failed, err
@@ -107,7 +107,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 		"format":  "json",
 		"title":   talkPage,
 		"text":    newContent,
-		"summary": "Warning [[Special:Contributions/" + user + "|" + user + "]] ({{[[Template:" + fullTemplate + "|" + fullTemplate + "]]}})",
+		"summary": "Warning [[Special:Contributions/" + user + "|" + user + "]]: {{[[Template:" + fullTemplate + "|" + fullTemplate + "]]}} ([[m:Fortress|Fortress]])",
 		"token":   csrf,
 	}, tok, "https://"+wiki+"/w/api.php")
 	if err != nil {
@@ -133,8 +133,13 @@ func ConstructNewTalk(template string, content string) string {
 		}
 	}
 	if lastHeaderIndex == -1 {
+		newContent := ""
+		if len(tp) == 0 {
+			newContent = content + "== " + headerDate + " ==\n\n{{subst:" + template + "}} ~~~~\n\n"
+		} else {
+			newContent = content + "\n\n== " + headerDate + " ==\n\n{{subst:" + template + "}} ~~~~\n\n"
+		}
 		fmt.Println("making new section")
-		newContent := content + "\n\n== " + headerDate + " ==\n\n{{subst:" + template + "}} ~~~~\n\n"
 		return newContent
 	}
 

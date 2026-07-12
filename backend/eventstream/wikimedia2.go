@@ -59,15 +59,13 @@ func (w *WMStreamer) StartStream() {
 				}
 			}
 
-			if user := dataJson.Performer; user.EditCount > 6 && dataJson.WikiID == "testwiki" {
+			if user := dataJson.Performer; user.EditCount < 10 && dataJson.WikiID == "enwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
 				}
 
 				w.handleEvent(&dataJson)
-
-				fmt.Println(user.UserText + "@" + dataJson.WikiID)
 
 			}
 		})
@@ -106,6 +104,7 @@ type RecentChangeJSON struct {
 	ParsedComment string         `json:"parsedcomment"`
 	History       []*HistoryEdit `json:"history"`
 	Type          string         `json:"type"`
+	Watched       bool           `json:"watched"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
@@ -114,13 +113,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	diffSize := streamData.Revision.RevSize - streamData.PriorState.Revision.RevSize
 	title := strings.Replace(streamData.Page.PageTitle, "_", " ", -1)
 	if newid == 0 || oldid == 0 {
-		streamStr, err := json.Marshal(streamData)
-		if err != nil {
-			fmt.Println("failed to marshal error with diff: " + err.Error())
-			return
-		}
-		fmt.Println(string(streamStr))
-
+		return
 	}
 	apiPath := "https://" + streamData.Meta.Domain + "/w/api.php"
 
@@ -139,10 +132,8 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 
 	var histData HistoryJSON
 	json.Unmarshal(res, &histData)
-	fmt.Println("HIST:", string(res))
 
 	history := histData.Query.Pages[0].Revisions
-	fmt.Println("HIST: ", history)
 	if history[0].Revid != int(streamData.Revision.RevID) {
 		return
 	}
@@ -206,13 +197,21 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		ParsedComment: comment,
 		History:       history,
 		Type:          "new",
+		Watched:       false,
 	}
 	for client := range w.wss.Hub.Clients {
 		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
 			Title: streamData.Page.PageTitle,
 			Wiki:  streamData.WikiID,
 		})
-		fmt.Println(client.SeenPages)
+		if watched, ok := client.WatchedUsers[user.UserText]; ok && watched {
+			fmt.Println("WATCHED USER:::", user.UserText)
+			sendingData.Watched = true
+			client.Send <- sendingData
+			return
+		} else {
+			fmt.Println(client.WatchedUsers[user.UserText])
+		}
 		if slices.Contains(client.Wikis, wikiID) && userEC <= client.MaxEditCount {
 			client.Send <- sendingData
 		}

@@ -20,6 +20,7 @@ export type WSResponse = {
     history: HistEdit[];
     page?: string;
     revid?: number;
+    watched: boolean;
 };
 
 export type HistEdit = {

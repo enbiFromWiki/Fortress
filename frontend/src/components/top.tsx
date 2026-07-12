@@ -1,11 +1,11 @@
 import { useAuthStore } from '../stores/authstore';
 import { fetchCred } from '../util/util';
-import { rollbackCurrentEdit } from '../websocket/sendingfuncs';
+import { rollAndWarnCurrentEdit } from '../websocket/sendingfuncs';
 
 export function TopBar() {
     async function rollback() {
         try {
-            await rollbackCurrentEdit('non-constructive edits');
+            await rollAndWarnCurrentEdit('non-constructive edits');
         } catch {
             console.log('err above/below right?');
         }

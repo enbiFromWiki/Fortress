@@ -6,19 +6,21 @@ import { usePageStore } from '../stores/pagestore';
 import { memo } from 'react';
 
 export function History() {
-    const pageKey = useEditStore((state) => {
-        const edit = state.selectedEdit;
-        return edit ? `${edit.title}|${edit.wiki}` : undefined;
-    });
+    const edit = useEditStore((state) => state.selectedEdit);
+    const pageKey = edit ? `${edit.title}|${edit.wiki}` : undefined;
     const history = usePageStore((i) => i.pages[pageKey ?? -1]?.history);
-
-    console.log(history);
+    if (!edit) return null;
     if (!history) return null;
 
     return (
         <div className="h-full overflow--y-auto overflow-x-hidden">
             {history.map((i) => (
-                <HistItem obj={i} key={i.revid} onClick={() => {}} />
+                <HistItem
+                    isCurr={i.revid === edit?.newid}
+                    obj={i}
+                    key={i.revid}
+                    onClick={() => {}}
+                />
             ))}
         </div>
     );
@@ -27,15 +29,17 @@ export function History() {
 const HistItem = memo(function HistItem({
     obj,
     onClick,
+    isCurr,
 }: {
     obj: HistEdit;
     onClick: () => void;
+    isCurr: boolean;
 }) {
     // const wikiPath = `https://${obj.domain}/wiki/`;
     return (
         <div
             onClick={onClick}
-            className="text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative first:after:translate-x-[calc(5%-4px)] p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition"
+            className={`text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative first:after:translate-x-[calc(5%-4px)] p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition ${isCurr ? 'bg-neutral-800!' : ''}`}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center">

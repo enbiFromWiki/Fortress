@@ -65,7 +65,7 @@ const QueueItem = memo(function QueueItem({
                             'https://meta.wikimedia.org/wiki/Special:CA/' +
                             encodeURIComponent(obj.user.username)
                         }
-                        className="text-neutral-300! truncate"
+                        className={`text-neutral-300 truncate ${obj.watched ? 'font-bold text-[#ff0353]!' : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >

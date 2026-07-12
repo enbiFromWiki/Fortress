@@ -43,6 +43,15 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		{
 			client.paused = false
 		}
+	case "watch":
+		{
+			client.WatchedUsers[data.TargetUser] = true
+			fmt.Println(client.WatchedUsers)
+		}
+	case "unwatch":
+		{
+			client.WatchedUsers[data.TargetUser] = false
+		}
 	case "rollback":
 		{
 			if data.TargetWiki == "" {
@@ -130,7 +139,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				"status": "success",
 				"id":     data.ID,
 			}
-			_, err = mwclient.AutoWarnUser(data.TargetUser, "uw-vandalism", client.token, data.TargetWiki)
+			_, err = mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki)
 			if err != nil {
 				client.Send <- map[string]any{
 					"type":   "response",

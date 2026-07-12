@@ -28,8 +28,9 @@ socket.subscribe((e) => {
     }
 });
 
-export async function rollbackCurrentEdit(
-    reason: string
+export async function rollAndWarnCurrentEdit(
+    reason: string,
+    template: string
 ): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
     const edit = store.selectedEdit;
@@ -39,11 +40,20 @@ export async function rollbackCurrentEdit(
         action: 'rollandwarn',
         targetuser: edit.user.username,
         targettitle: edit.title,
-        targetdomain: 'test.wikipedia.org',
+        targetdomain: edit.domain,
         summary,
-        warntp: 'uw-vandalism',
+        warntp: `uw-${template}`,
     };
     console.log(obj);
     const res = await sendEditRequest(obj);
+    socket.send(
+        JSON.stringify({ action: 'watch', targetuser: edit.user.username })
+    );
     return res;
+}
+
+export function watchCurrentUser() {
+    const user = useEditStore.getState().selectedEdit?.user?.username;
+
+    socket.send(JSON.stringify({ action: 'watch', targetuser: user }));
 }
