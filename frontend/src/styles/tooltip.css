@@ -1,0 +1,12 @@
+.tooltip {
+    padding: 5px 7px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    pointer-events: none;
+    max-width: 18vw;
+    corner-shape: bevel;
+    word-wrap: break-word;
+    border: 1px solid #aaa8;
+    transition: opacity 50ms ease-in-out;
+}

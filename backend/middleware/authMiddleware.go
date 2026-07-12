@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"gateway/auth"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -31,7 +31,6 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 				"error":  "Failed to extract json cookies",
 				"cookie": cookie,
 			})
-			log.Fatal(err)
 			return
 		}
 
@@ -45,6 +44,7 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 
 		token, err := ts.Token()
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(401, gin.H{
 				"status": "reauth",
 				"error":  "refresh token expired",

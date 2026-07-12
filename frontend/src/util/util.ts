@@ -11,10 +11,10 @@ export function calculateDiffColour(diffsize: number): {
     fontWeight: string;
 } {
     if (diffsize <= -500) {
-        return { color: '#c66', fontWeight: 'bold' };
+        return { color: '#f66', fontWeight: 'bold' };
     }
     if (diffsize < 0) {
-        return { color: '#c66', fontWeight: 'normal' };
+        return { color: '#f66', fontWeight: 'normal' };
     }
     if (diffsize === 0) {
         return { color: '#bbb', fontWeight: 'normal' };
@@ -23,4 +23,22 @@ export function calculateDiffColour(diffsize: number): {
         return { color: '#6c6', fontWeight: 'normal' };
     }
     return { color: '#6c6', fontWeight: 'bold' };
+}
+
+export function locallyParseEditSummary(
+    content: string,
+    domain: string
+): string {
+    const newContent = content
+        .replace(
+            /\[\[([^|\]]+)\|([^|\]]+)\]\]/g,
+            (_, group, group2) =>
+                `<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group2}</a>`
+        )
+        .replace(
+            /\[\[([^|\]]+)\]\]/g,
+            (_, group) =>
+                `<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group}</a>`
+        );
+    return newContent;
 }

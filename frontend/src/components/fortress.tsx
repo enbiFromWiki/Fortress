@@ -9,10 +9,11 @@ import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
 import {
-    rollAndWarnCurrentEdit as rollAndWarnCurrentEdit,
+    rollAndWarnCurrentEdit,
     watchCurrentUser,
 } from '../websocket/sendingfuncs';
-
+import { Tooltip } from './tooltip';
+import { Settings } from './settings';
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
     const decrement = useEditStore((i) => i.decrementSelection);
@@ -65,6 +66,8 @@ export function Fortress() {
             <div className="infobox bg-[#1a1a1a] border-b border-b-neutral-700">
                 <Infobox />
             </div>
+            <Tooltip />
+            <Settings />
         </div>
     );
 }

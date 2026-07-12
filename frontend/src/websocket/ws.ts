@@ -10,12 +10,13 @@ export class Socket {
     private manuallyClosed = false;
     private listeners: ((e: MessageEvent) => void)[] = [];
 
-    private readonly url =
+    private url =
         'ws://localhost:8080/ws?maxcount=99999&wikis=test2wiki,testwiki,enwiki';
 
     private setConnected: (i: boolean) => void;
 
-    constructor() {
+    constructor(maxcount: number, wikis: string[]) {
+        this.url = `ws://localhost:8080/ws?maxcount=${maxcount}&wikis=${wikis.join(',')}`;
         this.setConnected = useAuthStore.getState().setConnected;
         this.connect();
     }

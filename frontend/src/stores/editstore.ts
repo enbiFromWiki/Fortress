@@ -25,9 +25,10 @@ export const useEditStore = create<EditStore>((set) => ({
 
             return {
                 selectedEdit: isQueueEmpty ? edit : state.selectedEdit,
-                futureEdits: isQueueEmpty
+                futureEdits: (isQueueEmpty
                     ? state.futureEdits
-                    : [...state.futureEdits, edit],
+                    : [...state.futureEdits, edit]
+                ).sort((a, b) => Number(b.watched) - Number(a.watched)),
             };
         });
     },

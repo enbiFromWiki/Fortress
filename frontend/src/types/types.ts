@@ -21,6 +21,8 @@ export type WSResponse = {
     page?: string;
     revid?: number;
     watched: boolean;
+    oldsize: number;
+    newsize: number;
 };
 
 export type HistEdit = {
@@ -35,4 +37,14 @@ export type HistEdit = {
     commenthidden: boolean;
     suppressed: boolean;
     sameuser?: boolean;
+};
+
+export type RevChange = {
+    type: 'revchange';
+    page: string;
+    wiki: string;
+    comment: string;
+    user: string;
+    revid: number;
+    domain: string;
 };

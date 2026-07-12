@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gateway/mediawiki"
-	"log"
 )
 
 type SentWSJSON struct {
@@ -64,7 +63,13 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				"type":   "rollback",
 			}, client.token, "https://"+data.TargetWiki+"/w/api.php")
 			if err != nil {
-				log.Fatal(err)
+				client.Send <- map[string]any{
+					"type":   "response",
+					"part":   "rollback",
+					"status": "success",
+					"id":     data.ID,
+				}
+				break
 			}
 
 			var tokRes RollbackTokenJSON
@@ -108,7 +113,14 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				"type":   "rollback",
 			}, client.token, "https://"+data.TargetWiki+"/w/api.php")
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err.Error())
+				client.Send <- map[string]any{
+					"type":   "response",
+					"id":     data.ID,
+					"status": "error",
+					"error":  err.Error(),
+				}
+				break
 			}
 
 			var tokRes RollbackTokenJSON

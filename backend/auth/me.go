@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gateway/util"
-	"log"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +22,7 @@ func (a *AuthService) Me(c *gin.Context) {
 	}, token.(string))
 
 	if err != nil {
-		log.Fatal(err)
+		util.ReturnError(c, 502, err.Error())
 	}
 	var guidata GlobalUserInfoJSON
 	err = json.Unmarshal(res, &guidata)

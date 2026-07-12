@@ -1,20 +1,22 @@
 import { useAuthStore } from '../stores/authstore';
-import { fetchCred } from '../util/util';
+import { useSettingsStore } from '../stores/settingsstore';
 import { rollAndWarnCurrentEdit } from '../websocket/sendingfuncs';
 
 export function TopBar() {
     async function rollback() {
         try {
-            await rollAndWarnCurrentEdit('non-constructive edits');
+            await rollAndWarnCurrentEdit('non-constructive edits', 'vandalism');
         } catch {
             console.log('err above/below right?');
         }
     }
-    async function logout() {
-        const res = await fetchCred('http://localhost:8080/logout');
-        if (!res.ok) return;
-        window.location.replace('/loginpage');
-    }
+    const setOpen = useSettingsStore((i) => i.setSettingsOpen);
+
+    // async function logout() {
+    //     const res = await fetchCred('http://localhost:8080/logout');
+    //     if (!res.ok) return;
+    //     window.location.replace('/loginpage');
+    // }
 
     const user = useAuthStore((i) => i.user);
 
@@ -34,7 +36,10 @@ export function TopBar() {
             <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
                 User
             </div>
-            <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
+            <div
+                onClick={() => setOpen(true)}
+                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md"
+            >
                 Settings
             </div>{' '}
             <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">

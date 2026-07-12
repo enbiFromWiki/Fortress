@@ -1,3 +1,5 @@
+import { useSettingsStore } from '../stores/settingsstore';
 import { Socket } from './ws';
 
-export const socket = new Socket();
+const settings = useSettingsStore.getState().settings;
+export const socket = new Socket(settings.maxEditCount, settings.wikis);

@@ -11,6 +11,7 @@ type PageStore = {
     pages: Pages;
     setPage: (title: string, wiki: string, data: PageData) => void;
     getPage: (title: string, wiki: string) => PageData | undefined;
+    addToHist: (title: string, wiki: string, data: HistEdit) => void;
 };
 
 type PageData = {
@@ -33,5 +34,19 @@ export const usePageStore = create<PageStore>()(
         },
 
         getPage: (title, wiki) => get().pages[`${title}|${wiki}`],
+        addToHist: (title, wiki, data) => {
+            set((s) => {
+                const caller = `${title}|${wiki}`;
+                const hist = s.pages[caller]?.history;
+                if (!hist) return {};
+
+                return {
+                    pages: {
+                        ...s.pages,
+                        [caller]: { history: [{ ...data }, ...hist] },
+                    },
+                };
+            });
+        },
     }))
 );
