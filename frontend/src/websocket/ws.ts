@@ -22,10 +22,9 @@ export class Socket {
         this.wikis = wikis;
         //this.url = `ws://localhost:8080/ws?maxcount=${this.maxcount}&wikis=${this.wikis.join(',')}`;
         this.setConnected = useAuthStore.getState().setConnected;
-        this.connect();
     }
 
-    private connect() {
+    connect() {
         this.socket = new WebSocket(
             `ws://localhost:8080/ws?maxcount=${this.maxcount}&wikis=${this.wikis.join(',')}`
         );

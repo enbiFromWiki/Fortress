@@ -19,7 +19,7 @@ func (a *AuthService) Me(c *gin.Context) {
 		"action":  "query",
 		"meta":    "globaluserinfo",
 		"guiprop": "groups|merged",
-	}, token.(string))
+	}, token.(string), "https://en.wikipedia.org/w/api.php")
 
 	if err != nil {
 		util.ReturnError(c, 502, err.Error())

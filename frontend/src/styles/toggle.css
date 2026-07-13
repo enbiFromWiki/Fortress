@@ -1,0 +1,25 @@
+.gw-toggle {
+    height: 24px;
+    width: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    padding: 2.75px;
+    background-color: #666;
+}
+
+.toggle-circle {
+    height: 19px;
+    width: 19px;
+    border-radius: 999px;
+    background-color: white;
+    transition: transform 150ms ease;
+    transform: translateX(0);
+}
+
+.gw-toggle.active {
+    background-color: #ff0353;
+    .toggle-circle {
+        transform: translateX(16px);
+    }
+}

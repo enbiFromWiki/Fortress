@@ -11,9 +11,8 @@ import (
 )
 
 type MediaWikiClient struct {
-	UserAgent  string
-	HTTPC      *http.Client
-	DefaultURL string
+	UserAgent string
+	HTTPC     *http.Client
 }
 
 func (client *MediaWikiClient) DoWithUA(req *http.Request) (*http.Response, error) {
@@ -42,24 +41,15 @@ func IsOK(res *http.Response) bool {
 
 func New(ua string, url string) *MediaWikiClient {
 	return &MediaWikiClient{
-		UserAgent:  ua,
-		HTTPC:      http.DefaultClient,
-		DefaultURL: url,
+		UserAgent: ua,
+		HTTPC:     http.DefaultClient,
 	}
 }
 
-func (client *MediaWikiClient) Get(params map[string]string, token string, serverOverride ...string) ([]byte, error) {
-	if len(serverOverride) > 1 {
-		return nil, errors.New("Too many parameters.")
-	}
-
-	var stringUrl string
-
-	if len(serverOverride) == 1 {
-		stringUrl = serverOverride[0]
-	} else {
-		// no override given
-		stringUrl = client.DefaultURL
+func (client *MediaWikiClient) Get(params map[string]string, token string, serverOverride string) ([]byte, error) {
+	stringUrl := serverOverride
+	if !(strings.HasPrefix(stringUrl, "https://") && strings.HasSuffix(stringUrl, "/w/api.php")) {
+		stringUrl = "https://" + stringUrl + "/w/api.php"
 	}
 
 	parsedUrl, err := url.Parse(stringUrl)
@@ -101,18 +91,10 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 	return bodyBytes, err
 }
 
-func (client *MediaWikiClient) Post(params map[string]string, token string, serverOverride ...string) ([]byte, error) {
-	if len(serverOverride) > 1 {
-		return nil, errors.New("Too many parameters.")
-	}
-
-	var serverUrl string
-
-	if len(serverOverride) == 1 {
-		serverUrl = serverOverride[0]
-	} else {
-		// no override given
-		serverUrl = client.DefaultURL
+func (client *MediaWikiClient) Post(params map[string]string, token string, serverOverride string) ([]byte, error) {
+	serverUrl := serverOverride
+	if !(strings.HasPrefix(serverUrl, "https://") && strings.HasSuffix(serverUrl, "/w/api.php")) {
+		serverUrl = "https://" + serverUrl + "/w/api.php"
 	}
 
 	q := url.Values{}

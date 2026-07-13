@@ -4,11 +4,13 @@ type SettingsStore = {
     settingsOpen: boolean;
     setSettingsOpen: (v: boolean) => void;
     settings: Settings;
+    setSettings: (i: Settings) => void;
 };
 
 export type Settings = {
-    maxEditCount: number | '';
+    maxEditCount: string;
     wikis: string[];
+    diffLinks: boolean;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
@@ -19,8 +21,15 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
         });
     },
 
-    settings: {
-        maxEditCount: 2,
+    settings: JSON.parse(localStorage.getItem('fortress-settings') ?? '0') || {
+        maxEditCount: '10',
         wikis: ['enwiki'],
+        diffLinks: true,
+    },
+
+    setSettings: (i) => {
+        set({
+            settings: i,
+        });
     },
 }));

@@ -1,15 +1,25 @@
-import { useState, type KeyboardEvent, type MouseEvent } from 'react';
+import {
+    useState,
+    type KeyboardEvent,
+    type MouseEvent,
+    type MouseEventHandler,
+    type ReactNode,
+} from 'react';
 import { useSettingsStore, type Settings } from '../stores/settingsstore';
 import { socket } from '../websocket/websocket';
+import { useTooltip } from '../hooks/useTooltip';
+import '../styles/toggle.css';
 
 export function Settings() {
     const setOpen = useSettingsStore((i) => i.setSettingsOpen);
     const open = useSettingsStore((i) => i.settingsOpen);
+    const setGlobalSettings = useSettingsStore((i) => i.setSettings);
     const globalSettings = useSettingsStore((i) => i.settings);
     const [settings, setSettings] = useState<Settings>(globalSettings);
     const [wikiInput, setWikiInput] = useState<string>('');
 
     function save(i: Settings) {
+        setGlobalSettings(settings);
         localStorage.setItem('fortress-settings', JSON.stringify(i));
         socket.reconnect(Number(settings.maxEditCount), settings.wikis);
     }
@@ -68,13 +78,13 @@ export function Settings() {
                                         ...i,
                                         maxEditCount:
                                             e.target.value !== ''
-                                                ? Number(e.target.value)
+                                                ? e.target.value
                                                 : '',
                                     }))
                                 }
                             />
                         </div>
-                        <div className="wikis mt-2">
+                        <div className="wikis ml-2 mt-2">
                             <h3 className="text-lg">Wikis</h3>
                             <div className="text-[0.8rem] text-neutral-400">
                                 Wikis to be monitored.
@@ -113,8 +123,52 @@ export function Settings() {
                                 ))}
                             </div>
                         </div>
+                        <h2 className="text-2xl mt-3">UI</h2>
+                        <div className="ui-settings my-2 ml-2">
+                            <Toggle
+                                onClick={() =>
+                                    setSettings((s) => ({
+                                        ...s,
+                                        diffLinks: !s.diffLinks,
+                                    }))
+                                }
+                                active={settings.diffLinks}
+                                label="Add clickable wikilinks to diff views"
+                            />
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function Toggle({
+    active,
+    onClick,
+    label,
+    tooltipText,
+}: {
+    label: ReactNode;
+    active: boolean;
+    onClick?: MouseEventHandler<HTMLDivElement>;
+    tooltipText?: string;
+}) {
+    const tooltip = useTooltip();
+    return (
+        <div
+            className="py-2 pl-2 cursor-pointer -translate-x-2 flex gap-3 rounded-md hover:bg-neutral-800 transition"
+            onClick={onClick}
+        >
+            <div className={`gw-toggle ${active ? 'active' : ''}`}>
+                <div className="toggle-circle"></div>
+            </div>
+            <div
+                className="toggle-label center text-sm text-neutral-200"
+                data-tooltip={tooltipText}
+                {...(tooltipText ? tooltip : {})}
+            >
+                {label}
             </div>
         </div>
     );

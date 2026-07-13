@@ -2,9 +2,12 @@ import { useEffect, useRef } from 'react';
 import '../styles/diff.css';
 import { useEditStore } from '../stores/editstore';
 import { useShallow } from 'zustand/shallow';
+import { useSettingsStore } from '../stores/settingsstore';
 
 export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
+    const shouldLink = useSettingsStore((i) => i.settings.diffLinks);
+    console.log('LINK: ', shouldLink);
     const { diff, isCurrent, domain } = useEditStore(
         useShallow((state) => {
             const edit = state.selectedEdit;
@@ -79,7 +82,9 @@ export function DiffViewer() {
                     <tbody
                         ref={tableRef}
                         dangerouslySetInnerHTML={{
-                            __html: formatDiff(diff, domain),
+                            __html: shouldLink
+                                ? formatDiff(diff, domain)
+                                : diff,
                         }}
                     ></tbody>
                 </table>

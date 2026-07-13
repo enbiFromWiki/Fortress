@@ -6,6 +6,7 @@ import { socket } from './websocket';
 
 export function startWs() {
     console.log('websocket starting');
+    socket.connect();
     socket.subscribe((e: MessageEvent) => {
         const addToEditStore = useEditStore.getState().addEdit;
         const addToPageStore = usePageStore.getState().setPage;

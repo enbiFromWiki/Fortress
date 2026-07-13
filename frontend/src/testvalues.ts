@@ -22,6 +22,10 @@ export const wsresponse: WSResponse = {
     diffsize: 561,
     parsedcomment: '',
     currentRevision: true,
+    history: [],
+    watched: false,
+    oldsize: 99,
+    newsize: 999,
 };
 
 export const wsresponse2: WSResponse = {
@@ -43,4 +47,8 @@ export const wsresponse2: WSResponse = {
     parsedcomment: '',
     diffsize: -123,
     currentRevision: true,
+    history: [],
+    watched: false,
+    oldsize: 99,
+    newsize: 999,
 };

@@ -119,7 +119,7 @@ func (a *AuthService) getToken(code string) (*AuthJSONToken, error) {
 	data, err := a.MWApi.Get(map[string]string{
 		"action": "query",
 		"meta":   "userinfo",
-	}, token.AccessToken)
+	}, token.AccessToken, "https://meta.wikimedia.org")
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

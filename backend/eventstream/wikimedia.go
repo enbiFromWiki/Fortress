@@ -139,6 +139,10 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	json.Unmarshal(res, &histData)
 
 	history := histData.Query.Pages[0].Revisions
+	if len(history) == 0 {
+		fmt.Println("broken hist: ", histData)
+		return
+	}
 	if history[0].Revid != int(streamData.Revision.RevID) {
 		return
 	}
