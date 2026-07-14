@@ -22,6 +22,7 @@ func (a *AuthService) Me(c *gin.Context) {
 	}, token.(string), "https://en.wikipedia.org/w/api.php")
 
 	if err != nil {
+		fmt.Println(err)
 		util.ReturnError(c, 502, err.Error())
 	}
 	var guidata GlobalUserInfoJSON
@@ -37,6 +38,7 @@ func (a *AuthService) Me(c *gin.Context) {
 	name := query.Name
 
 	if name == "" {
+		fmt.Println(string(res))
 		util.ReturnError(c, 502, "MediaWiki API failure")
 		return
 	}

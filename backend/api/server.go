@@ -15,7 +15,6 @@ import (
 type Server struct {
 	Auth       *auth.AuthService
 	MWClient   *mediawiki.MediaWikiClient
-	ApiService *APIService
 	WSService  *wshandler.WebSocketService
 	SSEhandler *eventstream.WMStreamer
 }
@@ -23,14 +22,12 @@ type Server struct {
 func NewServer() *Server {
 	mwClient := mediawiki.New("Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://en.wikipedia.org/w/api.php")
 	authService := auth.New(mwClient)
-	apiClient := NewAPI(mwClient)
 	wsService := wshandler.New(mwClient)
 	sseHandler := eventstream.New(wsService, mwClient)
 
 	return &Server{
 		MWClient:   mwClient,
 		Auth:       authService,
-		ApiService: apiClient,
 		WSService:  wsService,
 		SSEhandler: sseHandler,
 	}
@@ -45,7 +42,7 @@ func (s *Server) Start() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:4173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,

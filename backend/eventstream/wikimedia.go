@@ -62,7 +62,7 @@ func (w *WMStreamer) StartStream() {
 				}
 			}
 
-			if user := dataJson.Performer; user.EditCount < 10 && slices.Contains([]string{"enwiki", "frwiki", "commonswiki", "wikidatawiki"}, dataJson.WikiID) {
+			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "frwiki", "testwiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
@@ -110,6 +110,7 @@ type RecentChangeJSON struct {
 	Watched       bool           `json:"watched"`
 	OldSize       int            `json:"oldsize"`
 	NewSize       int            `json:"newsize"`
+	DiffID        int            `json:"diffid"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
@@ -200,6 +201,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		DiffHTML:      body,
 		NewID:         newid,
 		OldID:         oldid,
+		DiffID:        firstRevisionNotByUser,
 		Wiki:          streamData.WikiID,
 		WikiDomain:    streamData.Meta.Domain,
 		DiffSize:      diffSize,
