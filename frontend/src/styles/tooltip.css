@@ -5,8 +5,9 @@
     font-size: 0.85rem;
     pointer-events: none;
     max-width: 18vw;
-    corner-shape: bevel;
+    /* corner-shape: bevel; */
     word-wrap: break-word;
     border: 1px solid #aaa8;
-    transition: opacity 50ms ease-in-out;
+    color: #ccc;
+    transition: opacity 100ms ease-in-out;
 }

@@ -14,16 +14,26 @@ import {
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
 import { Settings } from './settings';
+import { useSettingsStore } from '../stores/settingsstore';
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
     const decrement = useEditStore((i) => i.decrementSelection);
+    const scrollbar = useSettingsStore((i) => i.settings.scrollbars);
 
     useEffect(() => {
         startWs();
-        document.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.code === 'Space') {
+        const handleKey = (e: KeyboardEvent): void => {
+            if (
+                e.target instanceof HTMLElement &&
+                (e.target?.matches('input, textarea') ||
+                    e.target.isContentEditable)
+            )
+                return;
+            if (e.code === 'Space' || e.key === 'ArrowRight') {
                 e.preventDefault();
+                const now = performance.now();
                 increment();
+                console.log('UPDATE TIME: ', performance.now() - now);
             }
             if (e.key === '[') {
                 decrement();
@@ -43,10 +53,14 @@ export function Fortress() {
             if (e.key === 'w') {
                 watchCurrentUser();
             }
-        });
+        };
+        document.addEventListener('keydown', handleKey);
+        return () => {
+            document.removeEventListener('keydown', handleKey);
+        };
     }, [increment, decrement]);
     return (
-        <div id="container">
+        <div id="container" className={scrollbar ? undefined : 'no-scrollbar'}>
             <div className="left bg-[#1a1a1a] border-r border-r-neutral-700">
                 <LeftSection />
             </div>

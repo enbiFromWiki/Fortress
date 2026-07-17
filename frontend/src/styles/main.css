@@ -50,6 +50,10 @@ a {
     background: #1e1e1e;
 }
 
+.no-scrollbar *::-webkit-scrollbar {
+    display: none;
+}
+
 .autocomment,
 .autocomment a {
     color: #a2a9b1;

@@ -11,6 +11,7 @@ export type Settings = {
     maxEditCount: string;
     wikis: string[];
     diffLinks: boolean;
+    scrollbars: boolean | undefined;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
@@ -25,6 +26,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
         maxEditCount: '10',
         wikis: ['enwiki'],
         diffLinks: true,
+        scrollbars: false,
     },
 
     setSettings: (i) => {

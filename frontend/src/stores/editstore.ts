@@ -12,6 +12,11 @@ type EditStore = {
     decrementSelection: () => void;
     //manuallySetSelection: (index: number) => void;
     setOldRevisions: (i: WikiPage) => void;
+    clearQueue: () => void;
+    tempItem: WSResponse | null;
+    setTempItem: (i: WSResponse) => void;
+    shouldUseTemp: boolean;
+    setShouldUseTemp: (i: boolean) => void;
 };
 
 export const useEditStore = create<EditStore>((set) => ({
@@ -42,6 +47,7 @@ export const useEditStore = create<EditStore>((set) => ({
                     : state.pastEdits,
                 selectedEdit: state.futureEdits[0] ?? null,
                 futureEdits: state.futureEdits.slice(1),
+                shouldUseTemp: false,
             };
         });
     },
@@ -56,6 +62,7 @@ export const useEditStore = create<EditStore>((set) => ({
                 selectedEdit:
                     state.pastEdits[state.pastEdits.length - 1] ?? null,
                 pastEdits: state.pastEdits.slice(0, -1),
+                shouldUseTemp: false,
             };
         });
     },
@@ -89,6 +96,27 @@ export const useEditStore = create<EditStore>((set) => ({
                 selectedEdit: newCurr,
                 futureEdits: newFuture,
             };
+        });
+    },
+
+    clearQueue: () => {
+        set({
+            futureEdits: [],
+            selectedEdit: null,
+        });
+    },
+
+    tempItem: null,
+    setTempItem: (i: WSResponse) => {
+        set({
+            tempItem: i,
+        });
+    },
+
+    shouldUseTemp: false,
+    setShouldUseTemp: (i: boolean) => {
+        set({
+            shouldUseTemp: i,
         });
     },
 }));

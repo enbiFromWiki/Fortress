@@ -26,6 +26,7 @@ export const wsresponse: WSResponse = {
     watched: false,
     oldsize: 99,
     newsize: 999,
+    diffid: 1,
 };
 
 export const wsresponse2: WSResponse = {
@@ -51,4 +52,5 @@ export const wsresponse2: WSResponse = {
     watched: false,
     oldsize: 99,
     newsize: 999,
+    diffid: 1,
 };

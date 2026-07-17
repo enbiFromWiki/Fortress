@@ -7,9 +7,20 @@ import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 export function Queue() {
-    const visibleItems = useEditStore(
-        useShallow((state) => [state.selectedEdit, ...state.futureEdits])
+    const { selectedEdit, futureEdits } = useEditStore(
+        useShallow((state) => ({
+            futureEdits: state.futureEdits,
+            selectedEdit: state.selectedEdit,
+            setTempEdit: state.setTempItem,
+            tempEdit: state.tempItem,
+            setUseTempEdit: state.setShouldUseTemp,
+        }))
     );
+    // function fetchTempEdit(i: WSResponse) {
+    //     setTempEdit(i);
+    //     setUseTempEdit(true);
+    // }
+    const visibleEdits = [selectedEdit, ...futureEdits];
     // function findAndSetSelection(obj: WSResponse) {
     //     const index = items.findIndex((i) => i.newid === obj.newid);
     //     if (index === -1) return;
@@ -18,12 +29,12 @@ export function Queue() {
 
     return (
         <div className="h-full overflow--y-auto overflow-x-hidden">
-            {visibleItems.map((i) =>
+            {visibleEdits.map((i) =>
                 i ? (
                     <QueueItem
                         obj={i}
                         key={i.newid}
-                        // onClick={() => findAndSetSelection(i)}
+                        current={i.newid === selectedEdit?.newid}
                     />
                 ) : null
             )}
@@ -33,16 +44,23 @@ export function Queue() {
 
 const QueueItem = memo(function QueueItem({
     obj,
-    //onClick,
+    current,
 }: {
     obj: WSResponse;
-    //onClick: () => void;
+    current: boolean;
 }) {
+    const setTempEdit = useEditStore((s) => s.setTempItem);
+    const setUseTempEdit = useEditStore((s) => s.setShouldUseTemp);
+
+    const handleClick = () => {
+        setTempEdit(obj);
+        setUseTempEdit(true);
+    };
     const wikiPath = `https://${obj.domain}/wiki/`;
     return (
         <div
-            //onClick={onClick}
-            className="text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative first:after:translate-x-[calc(5%-4px)] first:border-l-4 first:border-l-[#ff0353] p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition"
+            onClick={handleClick}
+            className={`text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative ${current ? 'after:translate-x-[calc(5%-4px)] border-l-4 border-l-[#ff0353]' : ''} p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition`}
         >
             <div className="flex align-center justify-between px-1">
                 <a

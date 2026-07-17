@@ -5,7 +5,6 @@ import { useAuthStore } from '../stores/authstore';
 export function Bottom() {
     const [playing, setPlaying] = useState(true);
     const connected = useAuthStore((i) => i.isConnected);
-    const setConnected = useAuthStore((i) => i.setConnected);
     function handleClick() {
         if (playing) {
             socket.send(

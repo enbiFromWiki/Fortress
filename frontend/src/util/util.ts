@@ -1,3 +1,6 @@
+import { useEditStore } from '../stores/editstore';
+import type { WSResponse } from '../types/types';
+
 export async function fetchCred(
     input: RequestInfo | URL,
     init?: RequestInit
@@ -41,4 +44,40 @@ export function locallyParseEditSummary(
                 `<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group}</a>`
         );
     return newContent;
+}
+
+export async function getAndSetNewDiff(
+    newid: number,
+    oldid: number,
+    domain: string,
+    setTemp: (i: WSResponse) => void,
+    setUseTemp: (i: boolean) => void
+) {
+    setUseTemp(true);
+    const currentEdit = useEditStore.getState().selectedEdit;
+    if (!currentEdit) return;
+    setTemp({ ...currentEdit, diffhtml: 'loading' });
+    console.log(oldid, newid);
+    const res = await fetch(
+        `https://${domain}/w/api.php?action=compare&fromrev=${oldid}&torev=${newid}&prop=diff%7Cids%7Ctitle%7Csize%7Cparsedcomment%7Cuser&formatversion=2&format=json&origin=*`,
+        {
+            headers: new Headers({
+                'User-Agent':
+                    'Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)',
+            }),
+        }
+    );
+    const err = res.headers.get('mediawiki-api-error');
+    if (err) {
+        throw new Error(err);
+    }
+    const data = await res.json();
+    const compare = data.compare;
+    setTemp({
+        ...currentEdit,
+        diffhtml: compare.body ?? 'error',
+        newsize: Number(compare.tosize),
+        oldsize: Number(compare.fromsize),
+        diffsize: Number(compare.tosize) - Number(compare.fromsize),
+    });
 }

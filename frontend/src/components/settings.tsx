@@ -17,11 +17,16 @@ export function Settings() {
     const globalSettings = useSettingsStore((i) => i.settings);
     const [settings, setSettings] = useState<Settings>(globalSettings);
     const [wikiInput, setWikiInput] = useState<string>('');
+    const WS_RESTART_TRIGGERS: (keyof Settings)[] = ['maxEditCount', 'wikis'];
 
     function save(i: Settings) {
         setGlobalSettings(settings);
         localStorage.setItem('fortress-settings', JSON.stringify(i));
-        socket.reconnect(Number(settings.maxEditCount), settings.wikis);
+        if (
+            !WS_RESTART_TRIGGERS.every((i) => settings[i] === globalSettings[i])
+        ) {
+            socket.reconnect(Number(settings.maxEditCount), settings.wikis);
+        }
     }
     if (!open) return null;
     function clickOutsideExit(e: MouseEvent) {
@@ -134,6 +139,16 @@ export function Settings() {
                                 }
                                 active={settings.diffLinks}
                                 label="Add clickable wikilinks to diff views"
+                            />
+                            <Toggle
+                                onClick={() => {
+                                    setSettings((s) => ({
+                                        ...s,
+                                        scrollbars: !s.scrollbars,
+                                    }));
+                                }}
+                                active={!settings.scrollbars}
+                                label="Hide all scrollbars"
                             />
                         </div>
                     </div>

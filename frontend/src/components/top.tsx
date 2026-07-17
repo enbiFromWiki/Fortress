@@ -1,8 +1,13 @@
 import { useAuthStore } from '../stores/authstore';
 import { useSettingsStore } from '../stores/settingsstore';
 import { rollAndWarnCurrentEdit } from '../websocket/sendingfuncs';
+import Delete from '../assets/bin.svg?react';
+import { useTooltip } from '../hooks/useTooltip';
+import { useEditStore } from '../stores/editstore';
 
 export function TopBar() {
+    const tooltip = useTooltip();
+    const clearQueue = useEditStore((i) => i.clearQueue);
     async function rollback() {
         try {
             await rollAndWarnCurrentEdit('non-constructive edits', 'vandalism');
@@ -42,8 +47,13 @@ export function TopBar() {
             >
                 Settings
             </div>{' '}
-            <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
-                Warn
+            <div
+                {...tooltip}
+                data-tooltip="Remove all edits from queue"
+                onClick={clearQueue}
+                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-0.75 rounded-md"
+            >
+                <Delete className="w-6 h-6" />
             </div>{' '}
         </div>
     );

@@ -3,6 +3,7 @@ import '../styles/diff.css';
 import { useEditStore } from '../stores/editstore';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '../stores/settingsstore';
+import { Toolbar } from './toolbar';
 
 export function DiffViewer() {
     const tableRef = useRef<HTMLTableSectionElement>(null);
@@ -10,7 +11,9 @@ export function DiffViewer() {
     console.log('LINK: ', shouldLink);
     const { diff, isCurrent, domain } = useEditStore(
         useShallow((state) => {
-            const edit = state.selectedEdit;
+            const edit = state.shouldUseTemp
+                ? state.tempItem
+                : state.selectedEdit;
             return {
                 domain: edit?.domain,
                 diff: edit?.diffhtml,
@@ -52,26 +55,37 @@ export function DiffViewer() {
 
     if (diff === '') {
         return (
-            <div className="flex justify-center h-full w-full text-center">
+            <div className="relative flex justify-center h-full w-full text-center">
                 <p className="mt-[30vh] text-neutral-400">No difference.</p>
+                <Toolbar />
+            </div>
+        );
+    }
+
+    if (diff === 'loading') {
+        return (
+            <div className="relative flex justify-center h-full w-full text-center">
+                <p className="mt-[30vh] text-neutral-400">Loading...</p>
+                <Toolbar />
             </div>
         );
     }
 
     if (!diff || !domain) {
         return (
-            <div className="flex justify-center h-full w-full text-center">
+            <div className="flex relative justify-center h-full w-full text-center">
                 <p className="mt-[30vh] text-neutral-400">
                     Waiting for new edit...
                 </p>
+                <Toolbar />
             </div>
         );
     }
     return (
-        <div
-            className={`diff-holder w-full h-full overflow-y-auto ${isCurrent ? '' : 'diff-notcurrent'}`}
-        >
-            <div className="diff-radius-container">
+        <div className="relative diff-holder w-full h-full overflow-y-auto">
+            <div
+                className={`diff-radius-container ${isCurrent ? '' : 'diff-notcurrent'}`}
+            >
                 <table className="diff">
                     <colgroup>
                         <col className="diff-marker" />
@@ -89,6 +103,7 @@ export function DiffViewer() {
                     ></tbody>
                 </table>
             </div>
+            <Toolbar />
         </div>
     );
 }

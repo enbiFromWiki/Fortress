@@ -23,6 +23,7 @@ export type WSResponse = {
     watched: boolean;
     oldsize: number;
     newsize: number;
+    diffid: number;
 };
 
 export type HistEdit = {

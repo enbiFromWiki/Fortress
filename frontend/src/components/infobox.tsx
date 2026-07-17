@@ -7,7 +7,9 @@ import { useTooltip } from '../hooks/useTooltip';
 import { calculateDiffColour } from '../util/util';
 
 export function Infobox() {
-    const edit = useEditStore((i) => i.selectedEdit);
+    const edit = useEditStore((i) =>
+        i.shouldUseTemp ? i.tempItem : i.selectedEdit
+    );
     const tooltip = useTooltip();
     if (!edit) return null;
     const sizePercentage =
