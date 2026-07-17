@@ -4,15 +4,7 @@ import (
 	"gateway/api"
 )
 
-
 func main() {
 	server := api.NewServer()
 	server.Start()
-	// fmt.Println("start")
-	// mwClient := mediawiki.New("Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)", "https://test.wikipedia.org/w/api.php")
-	// err := mwClient.AutoWarnUser("alt of enbi", "uw-vandalism", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5MDVhOGJkNzk3NGNiODcyNGNmNGI1NDhiOTgzMGY1MSIsImp0aSI6IjZkYjM2M2IxZjAxN2QzZWY4MzM5NzI1YmI1NDUxODJjMTVkN2EwODQ1MTdjNDU0MTE3MjZmOWIwNzkxODA0YThjOTM5MzQ3ZmRiNzkxN2QyIiwiaWF0IjoxNzgzNjk4ODQ5LjU2NTQwNywibmJmIjoxNzgzNjk4ODQ5LjU2NTQwOSwiZXhwIjoxNzgzNzEzMjQ5LjU1Mjc0OSwic3ViIjoibXc6Q2VudHJhbEF1dGg6OjgwODg1OTU4IiwiaXNzIjoiaHR0cHM6Ly9tZXRhLndpa2ltZWRpYS5vcmciLCJybGMiOiJlc3RhYmxpc2hlZC11c2VyIiwicmF0ZWxpbWl0Ijp7InJlcXVlc3RzX3Blcl91bml0Ijo1MDAwLCJ1bml0IjoiSE9VUiJ9LCJzY29wZXMiOlsiYmFzaWMiLCJlZGl0cGFnZSIsInJvbGxiYWNrIiwiaGlnaHZvbHVtZSIsImNyZWF0ZWVkaXRtb3ZlcGFnZSIsImVkaXRwcm90ZWN0ZWQiXX0.vlu4bVge61Jh9CpEfDOBhwfwI35KP90K0ryKOZxC1RqseKjSH2TT5dYQ_b956L0wER4GIJ77SDqDmTDgrlvTBSMZpzhR3K-D9Zn3-KX40J7mfgXyOZS_YeidVUUrjzrxFVKOANIWwiXqAftzf1Bv35S_L86Br2vbS_-0zaEDgXDKEvcSgcBzCrzSmdwSp1gVaLRMmBma4L9gJk-EgXeZ6OIQy2fCx7bbrfYll-TpXONMwPfKpdQN_9tRTbiYRyglLvyX4LwmXsinD_hbw7VyCvIfP8ZEdAN3jgjTMTIL8xeWtvvX-kNiMrVbr-VWXLyxvjNtHOcZLANZGUCxpy883C5KJdnS6gg5w5119NIkbvSUfBeEanje2KxBOxaKDSmM1q_PdEdWS-3NTpqwf6DYIIBtib4LtNRNyRiB5Emkwrv3bXkXMPtwxw8_sAflOwDIh8lAJRPRb0wo4Lm8h3fUHbfBWojOWmMirh3R6CPWQClWoc3QUjpybbiFQJaDXJkhrR4DPG9CFj5_O9MgKRFXB19ddp_fwxDrPY4Sf1N5laRM85WmnNmRW7-2kUOpkX_gpB38h8L6LbbjSTjKFykkHNA4PKfUBs34AsqvUnMOup8cT_2zmRWSulHe5uQgpizs015zWJODrAPj7HgFkdHAG5MtQ5C9nNIAx7W9BFTPHLw", "test.wikipedia.org")
-	// fmt.Println(err)
-	// *****REMOVE THE ABOVE AFTER IM DONE*****
-	// fmt.Println("end")
-
 }

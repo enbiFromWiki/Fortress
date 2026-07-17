@@ -50,7 +50,8 @@ func (w *WMStreamer) StartStream() {
 					Title: dataJson.Page.PageTitle,
 					Wiki:  dataJson.WikiID,
 				}) {
-					client.Send <- map[string]any{
+					select {
+					case client.Send <- map[string]any{
 						"type":    "revchange",
 						"page":    strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
 						"wiki":    dataJson.WikiID,
@@ -58,6 +59,9 @@ func (w *WMStreamer) StartStream() {
 						"user":    dataJson.Performer.UserText,
 						"revid":   dataJson.Revision.RevID,
 						"domain":  dataJson.Meta.Domain,
+					}:
+					default:
+						fmt.Println("Client too slow: dropping message")
 					}
 				}
 			}
