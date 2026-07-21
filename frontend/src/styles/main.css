@@ -53,12 +53,6 @@
         display: none;
     }
 
-    .autocomment,
-    .autocomment a {
-        color: #a2a9b1;
-        font-style: italic;
-    }
-
     input[type='number']::-webkit-outer-spin-button,
     input[type='number']::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -69,4 +63,10 @@
         appearance: textfield;
         -moz-appearance: textfield;
     }
+}
+
+.autocomment,
+.autocomment a {
+    color: #a2a9b1;
+    font-style: italic;
 }
