@@ -28,6 +28,31 @@ socket.subscribe((e) => {
     }
 });
 
+export async function rollbackCurrentEdit(
+    reason: string | null = null
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+    if (!edit) return null;
+    const summary =
+        reason !== null
+            ? `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`
+            : '';
+    const obj = {
+        action: 'rollback',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+    };
+    console.log(obj);
+    const res = await sendEditRequest(obj);
+    socket.send(
+        JSON.stringify({ action: 'watch', targetuser: edit.user.username })
+    );
+    return res;
+}
+
 export async function rollAndWarnCurrentEdit(
     reason: string,
     template: string

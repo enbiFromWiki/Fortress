@@ -1,24 +1,24 @@
-* {
-    font-family: Inter, sans-serif;
-    color: white;
-}
+@import 'tailwindcss';
 
-body {
-    background: #111;
-}
+@layer base {
+    * {
+        font-family: Inter, sans-serif;
+        color: white;
+    }
 
-#data-res {
-    font-family: monospace;
-}
+    body {
+        background: #111;
+    }
 
-@import 'tailwindcss/preflight.css';
-@import 'tailwindcss/utilities.css';
-@import 'tailwindcss/theme.css';
+    #data-res {
+        font-family: monospace;
+    }
 
-a {
-    color: #aaf;
-    transition: color 150ms ease-in-out;
-    &:hover {
-        color: #88f;
+    a {
+        color: #aaf;
+        transition: color 150ms ease-in-out;
+        &:hover {
+            color: #88f;
+        }
     }
 }

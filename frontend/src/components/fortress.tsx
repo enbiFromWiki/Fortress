@@ -10,6 +10,7 @@ import { Infobox } from './infobox';
 import { History } from './hist';
 import {
     rollAndWarnCurrentEdit,
+    rollbackCurrentEdit,
     watchCurrentUser,
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
@@ -52,6 +53,9 @@ export function Fortress() {
             }
             if (e.key === 'w') {
                 watchCurrentUser();
+            }
+            if (e.key === 'r') {
+                rollbackCurrentEdit();
             }
         };
         document.addEventListener('keydown', handleKey);

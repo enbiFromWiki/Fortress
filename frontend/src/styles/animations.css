@@ -1,0 +1,27 @@
+@keyframes popIn {
+    from {
+        transform: scale(0.9);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+.settings-container {
+    animation: popIn 100ms ease-in;
+}
+
+@keyframes loadingBar {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(13.75rem);
+    }
+}
+
+.loading-bar {
+    animation: loadingBar 600ms ease-in-out infinite alternate;
+}

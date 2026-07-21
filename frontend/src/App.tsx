@@ -1,4 +1,5 @@
 import './App.css';
+import './styles/animations.css';
 import { Routes, Route } from 'react-router';
 import { Login } from './components/login';
 import { Home } from './home';
@@ -19,27 +20,30 @@ function App() {
         start();
     }, [init]);
     return (
-        <Routes>
-            <Route
-                path="/main"
-                element={
-                    <ProtectedRoute>
-                        <Home />
-                    </ProtectedRoute>
-                }
-            />
-            <Route path="/forbidden" element={<Forbidden />} />
-            <Route path="/loginpage" element={<Login />} />
-            <Route
-                path="/"
-                element={
-                    <ProtectedRoute>
-                        <Fortress />
-                    </ProtectedRoute>
-                }
-            />
-            <Route path="*" element={<FourOhFour />} />
-        </Routes>
+        <>
+            <title>Fortress</title>
+            <Routes>
+                <Route
+                    path="/main"
+                    element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/forbidden" element={<Forbidden />} />
+                <Route path="/loginpage" element={<Login />} />
+                <Route
+                    path="/"
+                    element={
+                        <ProtectedRoute>
+                            <Fortress />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="*" element={<FourOhFour />} />
+            </Routes>
+        </>
     );
 }
 

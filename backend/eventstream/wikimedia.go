@@ -72,6 +72,10 @@ func (w *WMStreamer) StartStream() {
 					return
 				}
 
+				if dataJson.WikiID == "testwiki" {
+					fmt.Println("TESTWIKI BY", user.UserText)
+				}
+
 				w.handleEvent(&dataJson)
 
 			}
@@ -79,7 +83,7 @@ func (w *WMStreamer) StartStream() {
 
 		fmt.Println("STREAM ENDED; RECONNECTING")
 
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 500)
 	}
 }
 
@@ -226,11 +230,9 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 			fmt.Println("WATCHED USER:::", user.UserText)
 			sendingData.Watched = true
 			client.Send <- sendingData
-			return
-		} else {
-			fmt.Println(client.WatchedUsers[user.UserText])
+			continue
 		}
-		if slices.Contains(client.Wikis, wikiID) && userEC <= client.MaxEditCount {
+		if slices.Contains(client.Wikis, wikiID) && (userEC <= client.MaxEditCount || wikiID == "testwiki") {
 			client.Send <- sendingData
 		}
 	}

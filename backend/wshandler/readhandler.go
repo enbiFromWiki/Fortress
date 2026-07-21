@@ -53,7 +53,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		}
 	case "rollback":
 		{
-			if data.TargetWiki == "" {
+			if data.TargetWiki == "" || data.TargetUser == "" {
 				return
 			}
 
@@ -66,7 +66,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				client.Send <- map[string]any{
 					"type":   "response",
 					"part":   "rollback",
-					"status": "success",
+					"status": "error",
 					"id":     data.ID,
 				}
 				break
@@ -75,6 +75,17 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 			var tokRes RollbackTokenJSON
 			json.Unmarshal(res, &tokRes)
 			rbToken := tokRes.Query.Tokens.Rollbacktoken
+
+			rbParams := map[string]string{
+				"action": "rollback",
+				"title":  data.TargetTitle,
+				"user":   data.TargetUser,
+				"token":  rbToken,
+			}
+
+			if summary := data.Summary; summary != "" {
+				rbParams["summary"] = summary
+			}
 
 			res, err = mwclient.Post(map[string]string{
 				"action":  "rollback",

@@ -59,9 +59,15 @@ func Auth(a *auth.AuthService) func(c *gin.Context) {
 			Expiry:       token.Expiry,
 		}
 
+		fmt.Println("Is the old and new refresh token the same?:", authToken.RefreshToken == token.RefreshToken)
+		if authToken.RefreshToken != token.RefreshToken {
+			fmt.Println("old:", authToken.RefreshToken)
+			fmt.Println(token.RefreshToken)
+		}
+
 		cookieData, _ := json.Marshal(newCookie)
 
-		c.SetCookie("oauth_tokens", string(cookieData), 14*24*60*60, "/", "", true, true)
+		c.SetCookie("oauth_tokens", string(cookieData), 180*24*60*60, "/", "", true, true)
 		c.Set("accessToken", token.AccessToken)
 		c.Set("tokenExpiry", token.Expiry)
 		c.Next()

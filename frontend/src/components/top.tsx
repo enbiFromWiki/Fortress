@@ -4,6 +4,7 @@ import { rollAndWarnCurrentEdit } from '../websocket/sendingfuncs';
 import Delete from '../assets/bin.svg?react';
 import { useTooltip } from '../hooks/useTooltip';
 import { useEditStore } from '../stores/editstore';
+import SettingsSvg from '../assets/settings.svg?react';
 
 export function TopBar() {
     const tooltip = useTooltip();
@@ -26,7 +27,7 @@ export function TopBar() {
     const user = useAuthStore((i) => i.user);
 
     return (
-        <div className=" flex items-center px-1 h-full justify-around">
+        <div className=" flex items-center px-1 h-full justify-end">
             {user && (
                 <div
                     onClick={rollback}
@@ -43,15 +44,15 @@ export function TopBar() {
             </div>
             <div
                 onClick={() => setOpen(true)}
-                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md"
+                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
             >
-                Settings
+                <SettingsSvg className="w-6 h-6" />
             </div>{' '}
             <div
                 {...tooltip}
                 data-tooltip="Remove all edits from queue"
                 onClick={clearQueue}
-                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-0.75 rounded-md"
+                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
             >
                 <Delete className="w-6 h-6" />
             </div>{' '}

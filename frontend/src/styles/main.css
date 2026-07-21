@@ -1,72 +1,72 @@
-body {
-    font-family: Inter, sans-serif;
-    color: white;
-    background: #111;
-}
+@import 'tailwindcss';
 
-#data-res {
-    font-family: monospace;
-}
-
-@import 'tailwindcss/preflight.css';
-@import 'tailwindcss/utilities.css';
-@import 'tailwindcss/theme.css';
-
-a {
-    color: #aae;
-    transition: color 150ms ease-in-out;
-    &:hover {
-        color: #88f;
+@layer base {
+    body {
+        font-family: Inter, sans-serif;
+        color: white;
+        background: #111;
     }
-}
 
-.center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    #data-res {
+        font-family: monospace;
+    }
 
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
+    a {
+        color: #aae;
+        transition: color 150ms ease-in-out;
+        &:hover {
+            color: #88f;
+        }
+    }
 
-::-webkit-scrollbar-track {
-    background: #1e1e1e;
-    border-radius: 999px;
-}
+    .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 999px;
-    border: 2px solid #1e1e1e;
-}
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #777;
-}
+    ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+        border-radius: 999px;
+    }
 
-::-webkit-scrollbar-corner {
-    background: #1e1e1e;
-}
+    ::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 999px;
+        border: 2px solid #1e1e1e;
+    }
 
-.no-scrollbar *::-webkit-scrollbar {
-    display: none;
-}
+    ::-webkit-scrollbar-thumb:hover {
+        background: #777;
+    }
 
-.autocomment,
-.autocomment a {
-    color: #a2a9b1;
-    font-style: italic;
-}
+    ::-webkit-scrollbar-corner {
+        background: #1e1e1e;
+    }
 
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
+    .no-scrollbar *::-webkit-scrollbar {
+        display: none;
+    }
 
-input[type='number'] {
-    appearance: textfield;
-    -moz-appearance: textfield; /* for older Firefox versions */
+    .autocomment,
+    .autocomment a {
+        color: #a2a9b1;
+        font-style: italic;
+    }
+
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type='number'] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
 }

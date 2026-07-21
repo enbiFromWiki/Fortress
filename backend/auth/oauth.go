@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"gateway/mediawiki"
+	"io"
 	"net/http"
 
 	// "net/url"
@@ -185,6 +186,8 @@ type uaTransport struct {
 
 func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", t.ua)
+	s, _ := io.ReadAll(req.Body)
+	fmt.Println(req.URL.String(), req.Method, "\n\n\n\n BODY:", string(s))
 	return t.base.RoundTrip(req)
 }
 

@@ -47,7 +47,7 @@ export function Settings() {
             onClick={clickOutsideExit}
             className="fixed modal-backdrop w-full h-full backdrop-blur-[2px] bg-[#1a1a1a66]"
         >
-            <div className="absolute flex flex-col top-[50vh] left-[50vw] translate-[-50%] w-160 border border-[#3a3a3a] h-120 bg-[#1c1c1c] rounded-xl overflow-hidden">
+            <div className="settings-container absolute flex flex-col left-0 top-0 w-screen h-screen border border-[#3a3a3a] bg-[#1c1c1c] overflow-hidden">
                 <div className="w-full h-8 bg-neutral-800 border-b border-b-[#3a3a3a] flex items-center justify-between">
                     <div className="center h-full p-2 text-[0.8rem] text-neutral-400">
                         Settings
@@ -63,7 +63,7 @@ export function Settings() {
                     </div>
                 </div>
                 <div className="flex-1 flex w-full">
-                    <div className="w-40 h-full border-r border-r-neutral-700"></div>
+                    <div className="w-60 h-full border-r border-r-neutral-700"></div>
                     <div className="flex-1 p-2">
                         <h2 className="text-2xl  mb-5">Queue</h2>
                         <div className="editcountlimit pl-2">

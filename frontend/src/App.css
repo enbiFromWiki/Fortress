@@ -1,14 +1,16 @@
-body,
-html {
-    padding: 0;
-    margin: 0;
-}
+@layer base {
+    body,
+    html {
+        padding: 0;
+        margin: 0;
+    }
 
-:root {
-    overscroll-behavior: none;
-}
+    :root {
+        overscroll-behavior: none;
+    }
 
-#root {
-    width: 100dvw;
-    height: 100dvh;
+    #root {
+        width: 100dvw;
+        height: 100dvh;
+    }
 }

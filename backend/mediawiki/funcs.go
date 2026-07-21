@@ -32,7 +32,7 @@ func (c *MediaWikiClient) GetSinglePageContent(title string, wiki string) (strin
 	return content, content != "", nil
 }
 
-func (c *MediaWikiClient) Edit(page string, wiki string, tok string, content string, summary string, appendtext bool) error {
+func (c *MediaWikiClient) Edit(page string, wiki string, tok string, content string, summary string, appendtext bool, dtAutoSub bool) error {
 	tokByte, err := c.Get(map[string]string{
 		"action": "query",
 		"meta":   "tokens",
@@ -57,6 +57,10 @@ func (c *MediaWikiClient) Edit(page string, wiki string, tok string, content str
 		params["appendtext"] = content
 	} else {
 		params["text"] = content
+	}
+
+	if !dtAutoSub {
+		params["discussiontoolsautosubscribe"] = "no"
 	}
 
 	_, err = c.Post(params, tok, "https://"+wiki+"/w/api.php")
@@ -88,7 +92,7 @@ func (c *MediaWikiClient) ReportToEnwikiAIV(user string, reason string, tok stri
 		return false, nil
 	}
 
-	err = c.Edit(aivPage, "en.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting [[Special:Contributions/"+user+"|"+user+"]] ([[m:Fortress|Fortress]])", true)
+	err = c.Edit(aivPage, "en.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting [[Special:Contributions/"+user+"|"+user+"]] ([[m:Fortress|Fortress]])", true, false)
 	if err != nil {
 		return false, err
 	}

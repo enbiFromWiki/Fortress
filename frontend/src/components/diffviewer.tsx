@@ -82,9 +82,9 @@ export function DiffViewer() {
         );
     }
     return (
-        <div className="relative diff-holder w-full h-full overflow-y-auto">
+        <div className="relative diff-holder w-full h-full overflow-y-auto overscroll-auto!">
             <div
-                className={`diff-radius-container ${isCurrent ? '' : 'diff-notcurrent'}`}
+                className={`mb-23 diff-radius-container ${isCurrent ? '' : 'diff-notcurrent'}`}
             >
                 <table className="diff">
                     <colgroup>

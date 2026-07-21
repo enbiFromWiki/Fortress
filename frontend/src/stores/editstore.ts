@@ -10,7 +10,6 @@ type EditStore = {
     addEdit: (edit: WSResponse) => void;
     incrementSelection: () => void;
     decrementSelection: () => void;
-    //manuallySetSelection: (index: number) => void;
     setOldRevisions: (i: WikiPage) => void;
     clearQueue: () => void;
     tempItem: WSResponse | null;
