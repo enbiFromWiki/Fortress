@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import '../styles/diff.css';
 import { useEditStore } from '../stores/editstore';
 import { useShallow } from 'zustand/shallow';
@@ -21,6 +21,11 @@ export function DiffViewer() {
             };
         })
     );
+    const formattedDiff = useMemo(() => {
+        if (!shouldLink || !diff || !domain) return '';
+
+        return formatDiff(diff, domain);
+    }, [diff, domain, shouldLink]);
 
     useEffect(() => {
         const table = tableRef.current;
@@ -81,6 +86,7 @@ export function DiffViewer() {
             </div>
         );
     }
+
     return (
         <div className="relative diff-holder w-full h-full overflow-y-auto overscroll-auto!">
             <div
@@ -96,9 +102,7 @@ export function DiffViewer() {
                     <tbody
                         ref={tableRef}
                         dangerouslySetInnerHTML={{
-                            __html: shouldLink
-                                ? formatDiff(diff, domain)
-                                : diff,
+                            __html: shouldLink ? formattedDiff : diff,
                         }}
                     ></tbody>
                 </table>
