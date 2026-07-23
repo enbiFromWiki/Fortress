@@ -25,6 +25,7 @@ export function TopBar() {
     // }
 
     const user = useAuthStore((i) => i.user);
+    console.log('TOP RERENDERED');
 
     return (
         <div className=" flex items-center px-1 h-full justify-end">

@@ -5,11 +5,17 @@ import UserSvg from '../assets/user.svg?react';
 import CommentSvg from '../assets/comment.svg?react';
 import { useTooltip } from '../hooks/useTooltip';
 import { calculateDiffColour } from '../util/util';
+import { useUserStore, type UserData } from '../stores/userstore';
+import { UserView } from './user';
 
 export function Infobox() {
     const edit = useEditStore((i) =>
         i.shouldUseTemp ? i.tempItem : i.selectedEdit
     );
+    const user: UserData | undefined = useUserStore(
+        (i) => i.users[edit?.user?.username ?? '']
+    );
+    console.log('new infobox', user);
     const tooltip = useTooltip();
     if (!edit) return null;
     const sizePercentage =
@@ -35,14 +41,20 @@ export function Infobox() {
                 </div>
                 <div className="flex items-center pb-0.75">
                     <UserSvg className="w-4! h-4! min-w-4 min-h-4 mr-1 **:fill-[#ccc]" />
-                    <a
-                        href={`https://${edit.domain}/wiki/${encodeURIComponent(edit.title)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="truncate text-[0.9rem] text-neutral-300! hover:text-neutral-200! transition"
-                    >
-                        {edit.user.username}
-                    </a>
+                    <UserView
+                        className="truncate text-[0.9rem] text-neutral-300 hover:text-neutral-200 no-transition"
+                        user={edit.user.username}
+                        domain={edit.domain}
+                        {...(user
+                            ? {
+                                  wiki: edit.wiki,
+                                  watched: user.watched,
+                                  locked: user.locked,
+                                  gblocked: user.gblocked,
+                                  blocked: user.blocked,
+                              }
+                            : {})}
+                    />
                 </div>
                 <div className="flex w-full items-center">
                     <CommentSvg className="w-3.5! h-3.5! min-w-3.5 min-h-3.5 **:fill-[#ccc] mr-1.5" />

@@ -13,7 +13,9 @@
 
     a {
         color: #aae;
-        transition: color 150ms ease-in-out;
+        &:not(.no-transition) {
+            transition: color 150ms ease-in-out;
+        }
         &:hover {
             color: #88f;
         }
@@ -69,4 +71,8 @@
 .autocomment a {
     color: #a2a9b1;
     font-style: italic;
+}
+
+.text-pink {
+    color: #ff0353;
 }

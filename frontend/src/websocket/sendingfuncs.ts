@@ -1,4 +1,5 @@
 import { useEditStore } from '../stores/editstore';
+import { useUserStore } from '../stores/userstore';
 import { socket } from './websocket';
 
 const pending = new Map();
@@ -79,6 +80,37 @@ export async function rollAndWarnCurrentEdit(
 
 export function watchCurrentUser() {
     const user = useEditStore.getState().selectedEdit?.user?.username;
+    const patchUser = useUserStore.getState().patchUser;
+    if (!user) return;
+
+    patchUser(user, { watched: true });
 
     socket.send(JSON.stringify({ action: 'watch', targetuser: user }));
+}
+
+export function unwatchCurrentUser() {
+    const user = useEditStore.getState().selectedEdit?.user?.username;
+    const patchUser = useUserStore.getState().patchUser;
+    if (!user) return;
+
+    patchUser(user, { watched: false });
+
+    socket.send(JSON.stringify({ action: 'unwatch', targetuser: user }));
+}
+
+export function setWatchedCurrentUser(watch: boolean) {
+    const user = useEditStore.getState().selectedEdit?.user?.username;
+    const patchUser = useUserStore.getState().patchUser;
+    if (!user) {
+        console.log('fail');
+        return;
+    }
+
+    patchUser(user, { watched: watch });
+
+    if (watch) {
+        socket.send(JSON.stringify({ action: 'watch', targetuser: user }));
+    } else {
+        socket.send(JSON.stringify({ action: 'unwatch', targetuser: user }));
+    }
 }

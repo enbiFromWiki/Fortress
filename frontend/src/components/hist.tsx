@@ -21,13 +21,14 @@ export function History() {
     const pageKey = edit ? `${edit.title}|${edit.wiki}` : undefined;
     const history = usePageStore((i) => i.pages[pageKey ?? -1]?.history);
     const tooltip = useTooltip();
+    console.log('history rerendered');
     if (!edit) return null;
     if (!history) return null;
 
     return (
         <div className="hist-holder w-full h-full flex flex-col">
             <div
-                className="bg-[#1a1a1a] w-full h-15 border-b border-b-neutral-700"
+                className="bg-[#1a1a1a] center w-full h-15 border-b border-b-neutral-700"
                 onClick={() => {
                     if (shouldUseTemp) {
                         setUseTemp(false);

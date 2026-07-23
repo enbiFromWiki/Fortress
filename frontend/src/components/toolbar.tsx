@@ -3,10 +3,12 @@ import RevertSvg from '../assets/revert.svg?react';
 import ArrowSvg from '../assets/arrow.svg?react';
 import {
     rollAndWarnCurrentEdit,
-    watchCurrentUser,
+    setWatchedCurrentUser,
 } from '../websocket/sendingfuncs';
 import { useTooltip } from '../hooks/useTooltip';
 import UserSvg from '../assets/user.svg?react';
+import { useEditStore } from '../stores/editstore';
+import { useUserStore } from '../stores/userstore';
 
 type RBMenuSingleItem = {
     name: string;
@@ -112,6 +114,12 @@ const toolbarFunctions: RBMenuCategory[] = [
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');
+    const edit = useEditStore((i) =>
+        i.shouldUseTemp ? i.tempItem : i.selectedEdit
+    );
+    const isWatched: boolean | undefined = useUserStore(
+        (i) => i.users[edit?.user?.username ?? '']?.watched
+    );
 
     function handleClick() {
         setMenu((i) => (i === 'rollback' ? '' : 'rollback'));
@@ -133,12 +141,15 @@ export function Toolbar() {
             </div>
             <div className="relative z-auto h-full w-18">
                 <button
-                    onClick={() => watchCurrentUser()}
+                    onClick={() => {
+                        console.log('i');
+                        setWatchedCurrentUser(!isWatched);
+                    }}
                     className="hover:bg-[#222] w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
                 >
                     <UserSvg className="w-5 h-5 m-0.5 **:fill-white" />
                     <div className="text-[0.8rem] leading-[1.2] text-center">
-                        Watch user
+                        {isWatched ? 'Unwatch user' : 'Watch user'}
                     </div>
                 </button>
             </div>
