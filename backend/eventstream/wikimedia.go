@@ -15,7 +15,7 @@ import (
 )
 
 func New(wss *wshandler.WebSocketService, mwClient *mediawiki.MediaWikiClient) *WMStreamer {
-	client := sse.NewClient("https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1")
+	client := sse.NewClient("https://stream.wikimedia.org/v2/stream/mediawiki.page_change.v1,recentchange")
 	client.Headers = map[string]string{
 		"User-Agent": "Fortress anti-vandalism application OAuth2 testing/0.2.0 (User:enbi@enwiki; lawfulbaguette@gmail.com)",
 	}
@@ -41,6 +41,9 @@ func (w *WMStreamer) StartStream() {
 			}
 			prevItem = string(data)
 			json.Unmarshal(data, &dataJson)
+			if dataJson.Meta.Stream == "mediawiki.recentchange" && dataJson.Type != "placeholder" {
+				return
+			}
 			if dataJson.PageChangeKind != "edit" {
 				return
 			}

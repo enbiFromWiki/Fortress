@@ -100,7 +100,9 @@ type WMEventStream struct {
 	// Schema string `json:"$schema"`
 	Meta struct {
 		Domain string `json:"domain"`
+		Stream string `json:"stream"`
 	} `json:"meta"`
+	Type string `json:"type"`
 }
 
 type HistoryJSON struct {

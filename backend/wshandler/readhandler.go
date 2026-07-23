@@ -49,7 +49,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		}
 	case "unwatch":
 		{
-			client.WatchedUsers[data.TargetUser] = false
+			delete(client.WatchedUsers, data.TargetUser)
 		}
 	case "rollback":
 		{
