@@ -9,6 +9,7 @@ import { useTooltip } from '../hooks/useTooltip';
 import UserSvg from '../assets/user.svg?react';
 import { useEditStore } from '../stores/editstore';
 import { useUserStore } from '../stores/userstore';
+import DotsSvg from '../assets/dots.svg?react';
 import {
     DEFAULT_WARNINGS,
     type RBMenuCategory,
@@ -59,6 +60,20 @@ export function Toolbar() {
                     <UserSvg className="w-5 h-5 m-0.5 **:fill-white" />
                     <div className="text-[0.8rem] leading-[1.2] text-center">
                         {isWatched ? t('unwatch-user') : t('watch-user')}
+                    </div>
+                </button>
+            </div>
+            <div className="relative z-auto h-full ml-auto w-18">
+                <button
+                    onClick={() => {
+                        console.log('i');
+                        setWatchedCurrentUser(!isWatched);
+                    }}
+                    className="hover:bg-[#222] w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
+                >
+                    <DotsSvg className="w-7 h-7" />
+                    <div className="text-[0.8rem] leading-[1.2] text-center">
+                        More actions
                     </div>
                 </button>
             </div>

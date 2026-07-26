@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { WSResponse } from '../types/types';
-import { wsresponse, wsresponse2 } from '../testvalues';
 import { type WikiPage } from './pagestore';
 
 type EditStore = {
@@ -19,7 +18,7 @@ type EditStore = {
 };
 
 export const useEditStore = create<EditStore>((set) => ({
-    futureEdits: [wsresponse, wsresponse2],
+    futureEdits: [],
     pastEdits: [],
     selectedEdit: null,
     addEdit: (edit: WSResponse) => {

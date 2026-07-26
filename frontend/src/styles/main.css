@@ -73,10 +73,14 @@
     font-style: italic;
 }
 
-.text-pink {
-    color: #ff0353 !important;
-}
-
 .text-grey {
     color: #737373;
+}
+
+.text-pink {
+    color: #ff0353;
+}
+
+.text-pink.text-grey {
+    color: #7b1e3b;
 }

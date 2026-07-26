@@ -47,10 +47,8 @@ export async function rollbackCurrentEdit(
         summary,
     };
     console.log(obj);
+    watchCurrentUser();
     const res = await sendEditRequest(obj);
-    socket.send(
-        JSON.stringify({ action: 'watch', targetuser: edit.user.username })
-    );
     return res;
 }
 
@@ -71,10 +69,8 @@ export async function rollAndWarnCurrentEdit(
         warntp: `uw-${template}`,
     };
     console.log(obj);
+    watchCurrentUser();
     const res = await sendEditRequest(obj);
-    socket.send(
-        JSON.stringify({ action: 'watch', targetuser: edit.user.username })
-    );
     return res;
 }
 
