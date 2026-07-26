@@ -9,6 +9,7 @@ import { useSettingsStore, type Settings } from '../stores/settingsstore';
 import { socket } from '../websocket/websocket';
 import { useTooltip } from '../hooks/useTooltip';
 import '../styles/toggle.css';
+import { useTranslation } from 'react-i18next';
 
 export function Settings() {
     const setOpen = useSettingsStore((i) => i.setSettingsOpen);
@@ -18,7 +19,7 @@ export function Settings() {
     const [settings, setSettings] = useState<Settings>(globalSettings);
     const [wikiInput, setWikiInput] = useState<string>('');
     const WS_RESTART_TRIGGERS: (keyof Settings)[] = ['maxEditCount', 'wikis'];
-
+    const { t } = useTranslation();
     function save(i: Settings) {
         setGlobalSettings(settings);
         localStorage.setItem('fortress-settings', JSON.stringify(i));
@@ -50,7 +51,7 @@ export function Settings() {
             <div className="settings-container absolute flex flex-col left-0 top-0 w-screen h-screen border border-[#3a3a3a] bg-[#1c1c1c] overflow-hidden">
                 <div className="w-full h-8 bg-neutral-800 border-b border-b-[#3a3a3a] flex items-center justify-between">
                     <div className="center h-full p-2 text-[0.8rem] text-neutral-400">
-                        Settings
+                        {t('settings')}
                     </div>
                     <div
                         onClick={() => {
@@ -59,18 +60,17 @@ export function Settings() {
                         }}
                         className="text-sm center h-full p-2 hover:bg-red-500 hover:text-white transition text-neutral-300"
                     >
-                        Exit
+                        {t('exit')}
                     </div>
                 </div>
                 <div className="flex-1 flex w-full">
                     <div className="w-60 h-full border-r border-r-neutral-700"></div>
                     <div className="flex-1 p-2">
-                        <h2 className="text-2xl  mb-5">Queue</h2>
+                        <h2 className="text-2xl  mb-5">{t('queue-heading')}</h2>
                         <div className="editcountlimit pl-2">
-                            <h3 className="text-lg">Edit count limit</h3>
+                            <h3 className="text-lg">{t('edit-count-limit')}</h3>
                             <div className="text-[0.8rem] text-neutral-400">
-                                Maximum edit count of a user before they are
-                                skipped.
+                                {t('edit-count-limit-caption')}
                             </div>
                             <input
                                 type="number"
@@ -90,9 +90,9 @@ export function Settings() {
                             />
                         </div>
                         <div className="wikis ml-2 mt-2">
-                            <h3 className="text-lg">Wikis</h3>
+                            <h3 className="text-lg">{t('wikis')}</h3>
                             <div className="text-[0.8rem] text-neutral-400">
-                                Wikis to be monitored.
+                                {t('wikis-settings-caption')}
                             </div>
                             <input
                                 placeholder="e.g. enwiki"
@@ -128,7 +128,7 @@ export function Settings() {
                                 ))}
                             </div>
                         </div>
-                        <h2 className="text-2xl mt-3">UI</h2>
+                        <h2 className="text-2xl mt-3">{t('ui')}</h2>
                         <div className="ui-settings my-2 ml-2">
                             <Toggle
                                 onClick={() =>
@@ -138,7 +138,7 @@ export function Settings() {
                                     }))
                                 }
                                 active={settings.diffLinks}
-                                label="Add clickable wikilinks to diff views"
+                                label={t('diff-link-caption')}
                             />
                             <Toggle
                                 onClick={() => {
@@ -148,7 +148,7 @@ export function Settings() {
                                     }));
                                 }}
                                 active={!settings.scrollbars}
-                                label="Hide all scrollbars"
+                                label={t('scrollbar-caption')}
                             />
                         </div>
                     </div>

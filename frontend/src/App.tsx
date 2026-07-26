@@ -1,4 +1,5 @@
 import './App.css';
+import './i18n';
 import './styles/animations.css';
 import { Routes, Route } from 'react-router';
 import { Login } from './components/login';

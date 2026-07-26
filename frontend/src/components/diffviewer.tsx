@@ -4,8 +4,10 @@ import { useEditStore } from '../stores/editstore';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '../stores/settingsstore';
 import { Toolbar } from './toolbar';
+import { useTranslation } from 'react-i18next';
 
 export function DiffViewer() {
+    const { t } = useTranslation();
     const tableRef = useRef<HTMLTableSectionElement>(null);
     const shouldLink = useSettingsStore((i) => i.settings.diffLinks);
     console.log('LINK: ', shouldLink);
@@ -61,7 +63,9 @@ export function DiffViewer() {
     if (diff === '') {
         return (
             <div className="relative flex justify-center h-full w-full text-center">
-                <p className="mt-[30vh] text-neutral-400">No difference.</p>
+                <p className="mt-[30vh] text-neutral-400">
+                    {t('no-difference')}
+                </p>
                 <Toolbar />
             </div>
         );
@@ -70,7 +74,9 @@ export function DiffViewer() {
     if (diff === 'loading') {
         return (
             <div className="relative flex justify-center h-full w-full text-center">
-                <p className="mt-[30vh] text-neutral-400">Loading...</p>
+                <p className="mt-[30vh] text-neutral-400">
+                    {t('loading-elipsis')}
+                </p>
                 <Toolbar />
             </div>
         );
@@ -80,7 +86,7 @@ export function DiffViewer() {
         return (
             <div className="flex relative justify-center h-full w-full text-center">
                 <p className="mt-[30vh] text-neutral-400">
-                    Waiting for new edit...
+                    {t('waiting-for-edit')}
                 </p>
                 <Toolbar />
             </div>
@@ -90,7 +96,7 @@ export function DiffViewer() {
     return (
         <div className="relative diff-holder w-full h-full overflow-y-auto overscroll-auto!">
             <div
-                className={`mb-23 diff-radius-container ${isCurrent ? '' : 'diff-notcurrent'}`}
+                className={`mb-26 diff-radius-container ${isCurrent ? '' : 'diff-notcurrent'}`}
             >
                 <table className="diff">
                     <colgroup>

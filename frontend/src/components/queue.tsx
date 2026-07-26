@@ -5,6 +5,7 @@ import type { WSResponse } from '../types/types';
 import { useEditStore } from '../stores/editstore';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useTranslation } from 'react-i18next';
 
 export function Queue() {
     const { selectedEdit, futureEdits } = useEditStore(
@@ -49,6 +50,7 @@ const QueueItem = memo(function QueueItem({
     obj: WSResponse;
     current: boolean;
 }) {
+    const { t } = useTranslation();
     const setTempEdit = useEditStore((s) => s.setTempItem);
     const setUseTempEdit = useEditStore((s) => s.setShouldUseTemp);
 
@@ -104,7 +106,7 @@ const QueueItem = memo(function QueueItem({
                     dangerouslySetInnerHTML={{
                         __html: obj.parsedcomment
                             ? obj.parsedcomment
-                            : '<span style="color:#888;font-style:italic;">No edit summary</span>',
+                            : `<span style="color:#888;font-style:italic;">${t('no-edit-summary')}</span>`,
                     }}
                 ></div>
             </div>

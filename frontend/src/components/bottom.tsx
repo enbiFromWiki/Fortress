@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { socket } from '../websocket/websocket';
 import { useAuthStore } from '../stores/authstore';
+import { useTranslation } from 'react-i18next';
 
 export function Bottom() {
     const [playing, setPlaying] = useState(true);
     const connected = useAuthStore((i) => i.isConnected);
+    const { t } = useTranslation();
     function handleClick() {
         if (playing) {
             socket.send(
@@ -32,9 +34,9 @@ export function Bottom() {
             </div>
             <div className="text-sm center px-2 h-full transition hover:bg-neutral-800">
                 {connected ? (
-                    <span className="text-green-400">Connected</span>
+                    <span className="text-green-400">{t('ws-connected')}</span>
                 ) : (
-                    <span className="text-red-500">Not connected</span>
+                    <span className="text-red-500">{t('ws-disconnected')}</span>
                 )}
             </div>
         </div>

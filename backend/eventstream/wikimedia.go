@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"slices"
 	"strings"
 
@@ -62,6 +63,13 @@ func (w *WMStreamer) StartStream() {
 				} else {
 					formattedTitle = titleSlices[1]
 				}
+				if formattedTitle == "" {
+					return
+				}
+				if _, _, err := net.ParseCIDR(formattedTitle); err == nil || net.ParseIP(formattedTitle) != nil {
+					fmt.Println("IP address", formattedTitle, "got blocked")
+					return
+				}
 				var out bytes.Buffer
 
 				err := json.Indent(&out, data, "", "  ")
@@ -89,13 +97,14 @@ func (w *WMStreamer) StartStream() {
 				}) {
 					select {
 					case client.Send <- map[string]any{
-						"type":    "revchange",
-						"page":    strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
-						"wiki":    dataJson.WikiID,
-						"comment": dataJson.Revision.Comment,
-						"user":    dataJson.Performer.UserText,
-						"revid":   dataJson.Revision.RevID,
-						"domain":  dataJson.Meta.Domain,
+						"type":     "revchange",
+						"page":     strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
+						"wiki":     dataJson.WikiID,
+						"comment":  dataJson.Revision.Comment,
+						"user":     dataJson.Performer.UserText,
+						"revid":    dataJson.Revision.RevID,
+						"parentid": dataJson.Revision.RevParentID,
+						"domain":   dataJson.Meta.Domain,
 					}:
 					default:
 						fmt.Println("Client too slow: dropping message")

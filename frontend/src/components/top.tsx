@@ -5,6 +5,7 @@ import Delete from '../assets/bin.svg?react';
 import { useTooltip } from '../hooks/useTooltip';
 import { useEditStore } from '../stores/editstore';
 import SettingsSvg from '../assets/settings.svg?react';
+import { useTranslation } from 'react-i18next';
 
 export function TopBar() {
     const tooltip = useTooltip();
@@ -16,6 +17,7 @@ export function TopBar() {
             console.log('err above/below right?');
         }
     }
+    const { t } = useTranslation();
     const setOpen = useSettingsStore((i) => i.setSettingsOpen);
 
     // async function logout() {
@@ -25,7 +27,6 @@ export function TopBar() {
     // }
 
     const user = useAuthStore((i) => i.user);
-    console.log('TOP RERENDERED');
 
     return (
         <div className=" flex items-center px-1 h-full justify-end">
@@ -38,10 +39,10 @@ export function TopBar() {
                 </div>
             )}
             <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition py-1 px-2 rounded-md">
-                Edit
+                {t('edit')}
             </div>
             <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
-                User
+                {t('user')}
             </div>
             <div
                 onClick={() => setOpen(true)}

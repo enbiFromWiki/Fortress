@@ -23,7 +23,7 @@ export function UserView({
             '[border-bottom-style:double] leading-[1.1] border-b-2 border-b-red-600'
         );
     if (blocked && blocked.has(wiki ?? ''))
-        classes.push('line-through italic text-neutral-500!');
+        classes.push('line-through italic text-grey');
     if (watched) classes.push('font-bold text-pink');
     if (gblocked)
         classes.push(
