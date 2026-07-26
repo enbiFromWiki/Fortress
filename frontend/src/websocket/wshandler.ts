@@ -1,6 +1,12 @@
 import { useEditStore } from '../stores/editstore';
 import { usePageStore } from '../stores/pagestore';
-import type { WSResponse, RevChange, HistEdit } from '../types/types';
+import { useUserStore } from '../stores/userstore';
+import type {
+    WSResponse,
+    RevChange,
+    HistEdit,
+    BlockResponse,
+} from '../types/types';
 import { locallyParseEditSummary } from '../util/util';
 import { socket } from './websocket';
 
@@ -11,8 +17,9 @@ export function startWs() {
         const addToEditStore = useEditStore.getState().addEdit;
         const addToPageStore = usePageStore.getState().setPage;
         const addToHist = usePageStore.getState().addToHist;
+        const patchUser = useUserStore.getState().patchUser;
 
-        let data: WSResponse | RevChange = JSON.parse(e.data);
+        let data: WSResponse | RevChange | BlockResponse = JSON.parse(e.data);
         console.log(data);
         switch (data.type) {
             case 'revchange': {
@@ -49,6 +56,13 @@ export function startWs() {
                     history: data.history,
                 });
                 break;
+            }
+            case 'block': {
+                data = data as BlockResponse;
+                console.log('BLOCK:', data);
+                patchUser(data.user as string, {
+                    blocked: new Set([data.wiki]),
+                });
             }
         }
     });

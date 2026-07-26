@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
 export type UserData = {
-    watched: boolean;
-    blocked: string[];
-    gblocked: boolean;
-    locked: boolean;
-    editcount: number;
+    watched?: boolean;
+    blocked?: Set<string>;
+    gblocked?: boolean;
+    locked?: boolean;
+    editcount?: number;
 };
 
 type UserStore = {
@@ -17,10 +17,10 @@ type UserStore = {
 export const useUserStore = create<UserStore>((set) => ({
     users: {
         '~2026-37947-76': {
-            blocked: ['enwiki', 'testwiki'],
+            blocked: new Set(['enwiki', 'testwiki']),
             watched: false,
-            gblocked: true,
-            locked: false,
+            gblocked: false,
+            locked: true,
             editcount: 10,
         },
     },

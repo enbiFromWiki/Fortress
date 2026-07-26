@@ -1,8 +1,10 @@
 package eventstream
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"gateway/wshandler"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/r3labs/sse/v2"
 )
 
@@ -33,15 +36,46 @@ func (w *WMStreamer) StartStream() {
 	for {
 		var prevItem string
 
-		var dataJson WMEventStream
 		w.sseClient.SubscribeRaw(func(msg *sse.Event) {
+			var dataJson WMEventStream
 			data := msg.Data
 			if string(msg.Data) == prevItem || len(data) == 0 {
 				return
 			}
 			prevItem = string(data)
 			json.Unmarshal(data, &dataJson)
-			if dataJson.Meta.Stream == "mediawiki.recentchange" && dataJson.Type != "placeholder" {
+			if dataJson.Meta.Stream == "mediawiki.recentchange" {
+				if dataJson.LogType != "block" {
+					return
+				}
+				if dataJson.LogAction != "block" {
+					return
+				}
+				formattedTitle := ""
+				titleSlices := strings.Split(dataJson.Title, ":")
+				if len(titleSlices) != 2 {
+					if len(titleSlices) != 1 {
+						return
+					}
+					formattedTitle = titleSlices[0]
+
+				} else {
+					formattedTitle = titleSlices[1]
+				}
+				var out bytes.Buffer
+
+				err := json.Indent(&out, data, "", "  ")
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(out.String())
+				fmt.Println(formattedTitle, "got blocked!")
+				w.wss.Hub.Broadcast(gin.H{
+					"type": "block",
+					"user": formattedTitle,
+					"wiki": dataJson.Wiki,
+				})
 				return
 			}
 			if dataJson.PageChangeKind != "edit" {

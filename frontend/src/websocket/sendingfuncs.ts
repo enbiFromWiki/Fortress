@@ -114,3 +114,22 @@ export function setWatchedCurrentUser(watch: boolean) {
         socket.send(JSON.stringify({ action: 'unwatch', targetuser: user }));
     }
 }
+
+export function autoSetWatchedCurrentUser() {
+    const user = useEditStore.getState().selectedEdit?.user?.username;
+    const patchUser = useUserStore.getState().patchUser;
+    const watched = !!useUserStore.getState().users[user ?? '']?.watched;
+    if (!user) {
+        console.log('fail');
+        return;
+    }
+
+    patchUser(user, { watched: !watched });
+    console.log(useUserStore.getState());
+
+    if (!watched) {
+        socket.send(JSON.stringify({ action: 'watch', targetuser: user }));
+    } else {
+        socket.send(JSON.stringify({ action: 'unwatch', targetuser: user }));
+    }
+}

@@ -9,7 +9,7 @@ export function UserView({
     className,
 }: {
     user: string;
-    blocked?: string[];
+    blocked?: Set<string>;
     gblocked?: boolean;
     locked?: boolean;
     watched?: boolean;
@@ -22,7 +22,7 @@ export function UserView({
         classes.push(
             '[border-bottom-style:double] leading-[1.1] border-b-2 border-b-red-600'
         );
-    if (blocked && blocked.includes(wiki ?? ''))
+    if (blocked && blocked.has(wiki ?? ''))
         classes.push('line-through italic text-neutral-500!');
     if (watched) classes.push('font-bold text-pink');
     if (gblocked)

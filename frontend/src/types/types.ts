@@ -26,6 +26,12 @@ export type WSResponse = {
     diffid: number;
 };
 
+export type BlockResponse = {
+    type: 'block';
+    wiki: string;
+    user: string;
+};
+
 export type HistEdit = {
     revid: number;
     parentid: number;

@@ -9,9 +9,9 @@ import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
 import {
+    autoSetWatchedCurrentUser,
     rollAndWarnCurrentEdit,
     rollbackCurrentEdit,
-    watchCurrentUser,
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
 import { Settings } from './settings';
@@ -52,7 +52,7 @@ export function Fortress() {
                 rollAndWarnCurrentEdit('test edit', 'test');
             }
             if (e.key === 'w') {
-                watchCurrentUser();
+                autoSetWatchedCurrentUser();
             }
             if (e.key === 'r') {
                 rollbackCurrentEdit();
