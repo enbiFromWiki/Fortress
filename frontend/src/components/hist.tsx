@@ -19,7 +19,7 @@ export function History() {
         }))
     );
     const pageKey = edit ? `${edit.title}|${edit.wiki}` : undefined;
-    const history = usePageStore((i) => i.pages[pageKey ?? -1]?.history);
+    const history = usePageStore((i) => i.pages[pageKey ?? '']?.history);
     const tooltip = useTooltip();
     console.log('history rerendered');
     if (!edit) return null;

@@ -162,9 +162,11 @@ type RecentChangeJSON struct {
 	History       []*HistoryEdit `json:"history"`
 	Type          string         `json:"type"`
 	Watched       bool           `json:"watched"`
+	PageWatched   bool           `json:"pagewatched"`
 	OldSize       int            `json:"oldsize"`
 	NewSize       int            `json:"newsize"`
 	DiffID        int            `json:"diffid"`
+	Level         int            `json:"level"`
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
@@ -217,9 +219,20 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		firstRevisionNotByUser = history[len(history)-1].Revid
 	}
 
-	user := streamData.Performer
-	userEC := user.EditCount
 	wikiID := streamData.WikiID
+	user := streamData.Performer
+	talkPage, ok, err := w.mwClient.GetSinglePageContent("User talk:"+user.UserText, streamData.Meta.Domain)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	warningLevel := mediawiki.GetWarningLevel(talkPage)
+
+	if !ok {
+		fmt.Println(title, wikiID)
+	}
+
+	userEC := user.EditCount
 
 	var data MWCompareJSON
 
@@ -265,6 +278,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		Watched:       false,
 		OldSize:       streamData.PriorState.Revision.RevSize,
 		NewSize:       streamData.Revision.RevSize,
+		Level:         warningLevel,
 	}
 
 	for client := range w.wss.Hub.Clients {
@@ -274,6 +288,15 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		})
 		if watched, ok := client.WatchedUsers[user.UserText]; ok && watched {
 			fmt.Println("WATCHED USER:::", user.UserText)
+			sendingData.Watched = true
+			client.Send <- sendingData
+			continue
+		}
+		if watched, ok := client.WatchedPages[wshandler.WikiPage{
+			Title: streamData.Page.PageTitle,
+			Wiki:  streamData.WikiID,
+		}]; ok && watched {
+			fmt.Println("WATCHED PAGE:::", streamData.Page.PageTitle+"@"+streamData.WikiID)
 			sendingData.Watched = true
 			client.Send <- sendingData
 			continue

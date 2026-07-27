@@ -1,4 +1,5 @@
 import { useEditStore } from '../stores/editstore';
+import { usePageStore } from '../stores/pagestore';
 import { useUserStore } from '../stores/userstore';
 import { socket } from './websocket';
 
@@ -38,7 +39,7 @@ export async function rollbackCurrentEdit(
     const summary =
         reason !== null
             ? `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`
-            : '';
+            : `Reverting edits ([[m:Fortress|Fortress]])`;
     const obj = {
         action: 'rollback',
         targetuser: edit.user.username,
@@ -127,5 +128,44 @@ export function autoSetWatchedCurrentUser() {
         socket.send(JSON.stringify({ action: 'watch', targetuser: user }));
     } else {
         socket.send(JSON.stringify({ action: 'unwatch', targetuser: user }));
+    }
+}
+
+export function watchCurrentPage() {
+    const patchPage = usePageStore.getState().patchPage;
+    const edit = useEditStore.getState().selectedEdit;
+    if (!edit) return;
+    const title = edit.title;
+    const wiki = edit.wiki;
+    patchPage(title, wiki, { watched: true });
+    socket.send(
+        JSON.stringify({
+            action: 'watchPage',
+            targetwiki: wiki,
+            targettitle: title,
+        })
+    );
+}
+
+export function autoSetWatchedCurrentPage() {
+    const patchPage = usePageStore.getState().patchPage;
+    const edit = useEditStore.getState().selectedEdit;
+    if (!edit) return;
+    const title = edit.title;
+    const wiki = edit.wiki;
+    const key = title && wiki ? `${title}|${wiki}` : '';
+    const watched = !!usePageStore.getState().pages[key]?.watched;
+    if (!title) {
+        console.log('fail');
+        return;
+    }
+
+    patchPage(title, wiki, { watched: !watched });
+    console.log(usePageStore.getState().pages);
+
+    if (!watched) {
+        socket.send(JSON.stringify({ action: 'watch', targetuser: title }));
+    } else {
+        socket.send(JSON.stringify({ action: 'unwatch', targetuser: title }));
     }
 }

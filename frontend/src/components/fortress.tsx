@@ -9,6 +9,7 @@ import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
 import {
+    autoSetWatchedCurrentPage,
     autoSetWatchedCurrentUser,
     rollAndWarnCurrentEdit,
     rollbackCurrentEdit,
@@ -56,6 +57,9 @@ export function Fortress() {
             }
             if (e.key === 'r') {
                 rollbackCurrentEdit();
+            }
+            if (e.key === 'p') {
+                autoSetWatchedCurrentPage();
             }
         };
         document.addEventListener('keydown', handleKey);

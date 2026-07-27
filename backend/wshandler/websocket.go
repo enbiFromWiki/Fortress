@@ -33,6 +33,7 @@ type Client struct {
 	MaxEditCount int
 	Wikis        []string
 	WatchedUsers map[string]bool
+	WatchedPages map[WikiPage]bool
 }
 
 type Hub struct {

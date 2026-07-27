@@ -7,6 +7,7 @@ import { useTooltip } from '../hooks/useTooltip';
 import { calculateDiffColour } from '../util/util';
 import { useUserStore, type UserData } from '../stores/userstore';
 import { UserView } from './user';
+import { usePageStore } from '../stores/pagestore';
 
 export function Infobox() {
     const edit = useEditStore((i) =>
@@ -15,11 +16,38 @@ export function Infobox() {
     const user: UserData | undefined = useUserStore(
         (i) => i.users[edit?.user?.username ?? '']
     );
+    const key = edit?.title && edit?.wiki ? `${edit.title}|${edit.wiki}` : '';
+    const pageWatched = usePageStore((i) => i.pages[key]?.watched);
     console.log('new infobox', user);
     const tooltip = useTooltip();
     if (!edit) return null;
     const sizePercentage =
         Math.round(((edit.newsize - edit.oldsize) / edit.oldsize) * 1000) / 10;
+
+    function calculateWarningLevelColour(wl: number) {
+        let color;
+        switch (wl) {
+            case 0:
+                color = '#ddd';
+                break;
+            case 1:
+                color = '#aaf';
+                break;
+            case 2:
+                color = '#ffe72e';
+                break;
+            case 3:
+                color = '#fa971e';
+                break;
+            case 4:
+                color = '#fc5138';
+                break;
+            default:
+                color = '#ddd';
+                break;
+        }
+        return { color };
+    }
 
     return (
         <div className="infobox-main flex justify-between w-full h-full p-2">
@@ -31,7 +59,7 @@ export function Infobox() {
                             href={`https://${edit.domain}/wiki/${encodeURIComponent(edit.title)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="truncate font-bold"
+                            className={`truncate font-bold no-transition ${pageWatched ? 'text-pink' : ''}`}
                             {...tooltip}
                             data-tooltip={edit.title}
                         >
@@ -78,6 +106,14 @@ export function Infobox() {
                 <div className="text-[0.8rem] text-neutral-400 text-end">
                     {`${sizePercentage > 0 ? `+${sizePercentage}` : sizePercentage === 0 && edit.diffsize !== 0 ? `~${sizePercentage}` : sizePercentage}%`}
                 </div>
+                {edit.level !== undefined && (
+                    <div
+                        style={calculateWarningLevelColour(edit.level)}
+                        className="mt-0.5 text-end text-[0.85rem] text-neutral-200"
+                    >
+                        Level: {edit.level}
+                    </div>
+                )}
             </div>
         </div>
     );

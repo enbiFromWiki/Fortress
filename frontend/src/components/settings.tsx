@@ -58,7 +58,7 @@ export function Settings() {
                             setOpen(false);
                             save(settings);
                         }}
-                        className="text-sm center h-full p-2 hover:bg-red-500 hover:text-white transition text-neutral-300"
+                        className="text-sm center h-full p-2 hover:bg-red-500 hover:text-white transition text-neutral-300 cursor-pointer"
                     >
                         {t('exit')}
                     </div>

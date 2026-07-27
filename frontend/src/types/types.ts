@@ -24,6 +24,8 @@ export type WSResponse = {
     oldsize: number;
     newsize: number;
     diffid: number;
+    watchedPage: boolean;
+    level?: number;
 };
 
 export type BlockResponse = {

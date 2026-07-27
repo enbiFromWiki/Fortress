@@ -3,6 +3,7 @@ import RevertSvg from '../assets/revert.svg?react';
 import ArrowSvg from '../assets/arrow.svg?react';
 import {
     rollAndWarnCurrentEdit,
+    rollbackCurrentEdit,
     setWatchedCurrentUser,
 } from '../websocket/sendingfuncs';
 import { useTooltip } from '../hooks/useTooltip';
@@ -108,7 +109,10 @@ function RollbackMenu({
             onClick={(e) => e.stopPropagation()}
             className="text-[0.925rem] text-neutral-300 an-fade-in rb-menu absolute left-0 bottom-18 flex flex-col gap-1 py-1 w-50 rounded-xl bg-neutral-900"
         >
-            <button className="hover:bg-[#1a1a1a] not-last:after:absolute not-last:after:translate-y-0.5 not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 mx-1 overflow-visible rounded-lg flex items-center justify-between">
+            <button
+                onClick={() => rollbackCurrentEdit()}
+                className="hover:bg-[#1a1a1a] not-last:after:absolute not-last:after:translate-y-0.5 not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 mx-1 overflow-visible rounded-lg flex items-center justify-between cursor-pointer"
+            >
                 <div>{t('no-warn-rollback')}</div>
             </button>
             {(DEFAULT_WARNINGS[wiki] ?? []).map((i) => (

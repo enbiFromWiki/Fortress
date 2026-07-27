@@ -7,14 +7,15 @@ import (
 )
 
 type SentWSJSON struct {
-	ID          string `json:"id"`
-	Action      string `json:"action"`
-	TargetUser  string `json:"targetuser"`
-	TargetTitle string `json:"targettitle"`
-	TargetWiki  string `json:"targetdomain"`
-	Summary     string `json:"summary"`
-	Token       string `json:"token"`
-	WarnTP      string `json:"warntp"`
+	ID           string `json:"id"`
+	Action       string `json:"action"`
+	TargetUser   string `json:"targetuser"`
+	TargetTitle  string `json:"targettitle"`
+	TargetWiki   string `json:"targetdomain"`
+	Summary      string `json:"summary"`
+	Token        string `json:"token"`
+	WarnTP       string `json:"warntp"`
+	TargetWikiDB string `json:"targetwiki"`
 }
 
 type RollbackTokenJSON struct {
@@ -50,6 +51,26 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 	case "unwatch":
 		{
 			delete(client.WatchedUsers, data.TargetUser)
+		}
+	case "watchPage":
+		{
+			if data.TargetTitle == "" || data.TargetWikiDB == "" {
+				return
+			}
+			client.WatchedPages[WikiPage{
+				Title: data.TargetTitle,
+				Wiki:  data.TargetWikiDB,
+			}] = true
+		}
+	case "unwatchPage":
+		{
+			if data.TargetTitle == "" || data.TargetWikiDB == "" {
+				return
+			}
+			delete(client.WatchedPages, WikiPage{
+				Title: data.TargetTitle,
+				Wiki:  data.TargetWikiDB,
+			})
 		}
 	case "rollback":
 		{
