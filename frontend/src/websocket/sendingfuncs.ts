@@ -38,8 +38,8 @@ export async function rollbackCurrentEdit(
     if (!edit) return null;
     const summary =
         reason !== null
-            ? `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`
-            : `Reverting edits ([[m:Fortress|Fortress]])`;
+            ? `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] (Fortress-Beta)`
+            : `Reverting edits (Fortress-Beta)`;
     const obj = {
         action: 'rollback',
         targetuser: edit.user.username,
@@ -60,7 +60,7 @@ export async function rollAndWarnCurrentEdit(
     const store = useEditStore.getState();
     const edit = store.selectedEdit;
     if (!edit) return null;
-    const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] ([[m:Fortress|Fortress]])`;
+    const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] (Fortress-Beta)`;
     const obj = {
         action: 'rollandwarn',
         targetuser: edit.user.username,
@@ -164,8 +164,20 @@ export function autoSetWatchedCurrentPage() {
     console.log(usePageStore.getState().pages);
 
     if (!watched) {
-        socket.send(JSON.stringify({ action: 'watch', targetuser: title }));
+        socket.send(
+            JSON.stringify({
+                action: 'watchPage',
+                targettitle: title,
+                targetwiki: wiki,
+            }),
+        );
     } else {
-        socket.send(JSON.stringify({ action: 'unwatch', targetuser: title }));
+        socket.send(
+            JSON.stringify({
+                action: 'unwatchPage',
+                targettitle: title,
+                targetwiki: wiki,
+            })
+        );
     }
 }

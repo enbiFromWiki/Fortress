@@ -15,7 +15,7 @@ export function startWs() {
     socket.connect();
     socket.subscribe((e: MessageEvent) => {
         const addToEditStore = useEditStore.getState().addEdit;
-        const addToPageStore = usePageStore.getState().setPage;
+        const addToPageStore = usePageStore.getState().patchPage;
         const addToHist = usePageStore.getState().addToHist;
         const patchUser = useUserStore.getState().patchUser;
 
@@ -55,6 +55,9 @@ export function startWs() {
                 addToPageStore(data.title, data.wiki, {
                     history: data.history,
                 });
+                if (data.level !== undefined) {
+                    patchUser(data.user.username, { level: data.level });
+                }
                 break;
             }
             case 'block': {

@@ -56,7 +56,7 @@ export const DEFAULT_WARNINGS: Warnings = {
                 {
                     name: 'Unexplained removal',
                     template: 'delete',
-                    summary: 'Unexplained content removal',
+                    summary: 'unexplained content removal',
                 },
                 {
                     name: 'MOS',

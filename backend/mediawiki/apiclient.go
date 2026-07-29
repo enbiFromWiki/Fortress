@@ -67,8 +67,6 @@ func (client *MediaWikiClient) Get(params map[string]string, token string, serve
 
 	parsedUrl.RawQuery = q.Encode()
 
-	fmt.Println("URL: " + parsedUrl.String())
-
 	req, _ := http.NewRequest("GET", parsedUrl.String(), nil)
 
 	if token != "none" {

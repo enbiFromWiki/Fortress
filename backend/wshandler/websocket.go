@@ -138,6 +138,7 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 		MaxEditCount: maxEditCount,
 		Wikis:        wikis,
 		WatchedUsers: map[string]bool{},
+		WatchedPages: map[WikiPage]bool{},
 	}
 
 	client.hub.register <- client

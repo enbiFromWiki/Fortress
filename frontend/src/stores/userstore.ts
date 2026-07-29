@@ -6,6 +6,7 @@ export type UserData = {
     gblocked?: boolean;
     locked?: boolean;
     editcount?: number;
+    level?: number;
 };
 
 type UserStore = {

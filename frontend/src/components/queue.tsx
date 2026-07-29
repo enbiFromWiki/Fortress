@@ -67,7 +67,7 @@ const QueueItem = memo(function QueueItem({
             <div className="flex align-center justify-between px-1">
                 <a
                     href={wikiPath + encodeURIComponent(obj.title)}
-                    className="truncate"
+                    className={`truncate ${obj.pagewatched ? 'text-pink font-bold' : ''}`}
                     target="_blank"
                     rel="noopener noreferrer"
                 >

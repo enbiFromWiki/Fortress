@@ -26,12 +26,19 @@ export const useEditStore = create<EditStore>((set) => ({
             const isQueueEmpty =
                 state.selectedEdit === null && state.futureEdits.length === 0;
 
+            function priority(item: WSResponse): number {
+                if (item.watched && item.pagewatched) return 3;
+                if (item.watched) return 2;
+                if (item.pagewatched) return 1;
+                return 0;
+            }
+
             return {
                 selectedEdit: isQueueEmpty ? edit : state.selectedEdit,
                 futureEdits: (isQueueEmpty
                     ? state.futureEdits
                     : [...state.futureEdits, edit]
-                ).sort((a, b) => Number(b.watched) - Number(a.watched)),
+                ).sort((a, b) => priority(b) - priority(a)),
             };
         });
     },

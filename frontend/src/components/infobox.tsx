@@ -106,12 +106,14 @@ export function Infobox() {
                 <div className="text-[0.8rem] text-neutral-400 text-end">
                     {`${sizePercentage > 0 ? `+${sizePercentage}` : sizePercentage === 0 && edit.diffsize !== 0 ? `~${sizePercentage}` : sizePercentage}%`}
                 </div>
-                {edit.level !== undefined && (
+                {(edit.level !== undefined || user?.level !== undefined) && (
                     <div
-                        style={calculateWarningLevelColour(edit.level)}
+                        style={calculateWarningLevelColour(
+                            user?.level ?? edit.level ?? 0
+                        )}
                         className="mt-0.5 text-end text-[0.85rem] text-neutral-200"
                     >
-                        Level: {edit.level}
+                        Level: {user?.level ?? edit.level}
                     </div>
                 )}
             </div>

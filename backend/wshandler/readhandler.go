@@ -183,7 +183,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				"status": "success",
 				"id":     data.ID,
 			}
-			_, err = mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki)
+			result, err := mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
 			if err != nil {
 				client.Send <- map[string]any{
 					"type":   "response",
@@ -195,10 +195,20 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				break
 			}
 
+			if result == "failed" {
+				client.Send <- map[string]any{
+					"type":   "response",
+					"part":   "warn",
+					"id":     data.ID,
+					"status": "error",
+					"error":  "unknown",
+				}
+				break
+			}
 			client.Send <- map[string]any{
 				"type":   "response",
 				"part":   "warn",
-				"status": "success",
+				"status": result,
 				"id":     data.ID,
 			}
 

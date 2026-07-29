@@ -288,18 +288,26 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		})
 		if watched, ok := client.WatchedUsers[user.UserText]; ok && watched {
 			fmt.Println("WATCHED USER:::", user.UserText)
+			if watched, ok := client.WatchedPages[wshandler.WikiPage{
+				Title: title,
+				Wiki:  wikiID,
+			}]; ok && watched {
+				sendingData.PageWatched = true
+			}
 			sendingData.Watched = true
 			client.Send <- sendingData
 			continue
 		}
 		if watched, ok := client.WatchedPages[wshandler.WikiPage{
-			Title: streamData.Page.PageTitle,
-			Wiki:  streamData.WikiID,
+			Title: title,
+			Wiki:  wikiID,
 		}]; ok && watched {
 			fmt.Println("WATCHED PAGE:::", streamData.Page.PageTitle+"@"+streamData.WikiID)
-			sendingData.Watched = true
+			sendingData.PageWatched = true
 			client.Send <- sendingData
 			continue
+		} else {
+			fmt.Println(client.WatchedPages, title)
 		}
 		if slices.Contains(client.Wikis, wikiID) && (userEC <= client.MaxEditCount || wikiID == "testwiki") {
 			client.Send <- sendingData

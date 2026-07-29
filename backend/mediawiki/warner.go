@@ -9,14 +9,14 @@ import (
 	"time"
 )
 
-type WarnResult int
+type WarnResult string
 
 const (
-	Failed WarnResult = iota
-	Warned
-	Reported
-	AlreadyGone // already reported
-	NoAction
+	Failed      WarnResult = "failed"
+	Warned      WarnResult = "warned"
+	Reported    WarnResult = "reported"
+	AlreadyGone WarnResult = "alreadygone" // already reported
+	NoAction    WarnResult = "noaction"
 )
 
 type CSRF struct {
@@ -42,7 +42,7 @@ type ContentResponseJSON struct {
 	} `json:"query"`
 }
 
-func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string) (WarnResult, error) {
+func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string, title string) (WarnResult, error) {
 	talkPage := "User talk:" + user
 	content, exists, err := c.GetSinglePageContent(talkPage, wiki)
 	if err != nil {
@@ -100,7 +100,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 	}
 
 	fullTemplate := template + wlStr
-	newContent := ConstructNewTalk(fullTemplate, content)
+	newContent := ConstructNewTalk(fullTemplate, content, title)
 
 	_, err = c.Post(map[string]string{
 		"action":  "edit",
@@ -117,10 +117,14 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 
 }
 
-func ConstructNewTalk(template string, content string) string {
+func ConstructNewTalk(template string, content string, tmParams ...string) string {
 	currentMonth := time.Now().UTC().Month().String()
 	currentYear := strconv.Itoa(time.Now().UTC().Year())
 	headerDate := currentMonth + " " + currentYear
+	params := ""
+	for _, param := range tmParams {
+		params = params + "|" + param
+	}
 
 	tp := SplitTalkSections(content)
 
@@ -135,9 +139,9 @@ func ConstructNewTalk(template string, content string) string {
 	if lastHeaderIndex == -1 {
 		newContent := ""
 		if len(tp) == 0 {
-			newContent = content + "== " + headerDate + " ==\n\n{{subst:" + template + "}} ~~~~\n\n"
+			newContent = content + "== " + headerDate + " ==\n\n{{subst:" + template + params + "}} ~~~~\n\n"
 		} else {
-			newContent = content + "\n\n== " + headerDate + " ==\n\n{{subst:" + template + "}} ~~~~\n\n"
+			newContent = content + "\n\n== " + headerDate + " ==\n\n{{subst:" + template + params + "}} ~~~~\n\n"
 		}
 		fmt.Println("making new section")
 		return newContent
@@ -145,7 +149,7 @@ func ConstructNewTalk(template string, content string) string {
 
 	oldContent := tp[lastHeaderIndex].Content
 
-	newContent := oldContent + "\n\n{{subst:" + template + "}} ~~~~\n\n"
+	newContent := oldContent + "\n\n{{subst:" + template + params + "}} ~~~~\n\n"
 	tp[lastHeaderIndex].Content = newContent
 
 	edit := MakeTalkPage(tp)
@@ -164,7 +168,6 @@ func GetWarningLevel(content string) int {
 
 	for _, section := range sections {
 		if section.Header == headerDate {
-			fmt.Println(section)
 			allWarnings = append(allWarnings, parseBodyForWarnings(section.Content)...)
 		}
 	}
