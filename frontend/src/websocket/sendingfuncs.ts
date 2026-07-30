@@ -53,7 +53,7 @@ export async function rollbackCurrentEdit(
     return res;
 }
 
-export async function rollAndWarnCurrentEdit(
+export async function rollAndAutoWarnCurrentEdit(
     reason: string,
     template: string
 ): Promise<Record<string, unknown> | null> {
@@ -68,6 +68,30 @@ export async function rollAndWarnCurrentEdit(
         targetdomain: edit.domain,
         summary,
         warntp: `uw-${template}`,
+        level: 'auto',
+    };
+    console.log(obj);
+    watchCurrentUser();
+    const res = await sendEditRequest(obj);
+    return res;
+}
+
+export async function rollAndSingleIssueWarnCurrentEdit(
+    reason: string,
+    template: string
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+    if (!edit) return null;
+    const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] (Fortress-Beta)`;
+    const obj = {
+        action: 'rollandwarn',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+        warntp: `uw-${template}`,
+        level: 'single',
     };
     console.log(obj);
     watchCurrentUser();
@@ -169,7 +193,7 @@ export function autoSetWatchedCurrentPage() {
                 action: 'watchPage',
                 targettitle: title,
                 targetwiki: wiki,
-            }),
+            })
         );
     } else {
         socket.send(

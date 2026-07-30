@@ -16,6 +16,7 @@ type SentWSJSON struct {
 	Token        string `json:"token"`
 	WarnTP       string `json:"warntp"`
 	TargetWikiDB string `json:"targetwiki"`
+	Level        string `json:"level"`
 }
 
 type RollbackTokenJSON struct {
@@ -37,11 +38,11 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 	switch data.Action {
 	case "pause":
 		{
-			client.paused = true
+			client.hub.Pause(client)
 		}
 	case "resume":
 		{
-			client.paused = false
+			client.hub.Unpause(client)
 		}
 	case "watch":
 		{
@@ -183,7 +184,14 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				"status": "success",
 				"id":     data.ID,
 			}
-			result, err := mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
+			level := data.Level
+			var result mediawiki.WarnResult
+			switch level {
+			case "", "auto":
+				result, err = mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
+			case "single":
+				result, err = mwclient.SingleIssueWarn(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
+			}
 			if err != nil {
 				client.Send <- map[string]any{
 					"type":   "response",

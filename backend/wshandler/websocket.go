@@ -2,8 +2,10 @@ package wshandler
 
 import (
 	"fmt"
+	"gateway/global"
 	"gateway/mediawiki"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -36,11 +38,17 @@ type Client struct {
 	WatchedPages map[WikiPage]bool
 }
 
+type PauseRequest struct {
+	client *Client
+	paused bool
+}
+
 type Hub struct {
 	Clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan any //struct
+	broadcast  chan global.WrittenUpdate //struct
+	pause      chan PauseRequest
 }
 
 type WebSocketService struct {
@@ -54,7 +62,8 @@ func New(mwclient *mediawiki.MediaWikiClient) *WebSocketService {
 			Clients:    make(map[*Client]bool),
 			register:   make(chan *Client),
 			unregister: make(chan *Client),
-			broadcast:  make(chan any),
+			broadcast:  make(chan global.WrittenUpdate),
+			pause:      make(chan PauseRequest),
 		},
 		MWClient: mwclient,
 	}
@@ -73,17 +82,21 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.broadcast:
 			for client := range h.Clients {
-				if client.paused {
+				shouldBeSent, processedMessage := ProcessData(message, client)
+				if !shouldBeSent {
 					continue
 				}
 				select {
-				case client.Send <- message:
+				case client.Send <- processedMessage:
 
 				default:
 					delete(h.Clients, client)
 					close(client.Send)
 				}
 			}
+		case message := <-h.pause:
+			fmt.Println("pause request made")
+			message.client.paused = message.paused
 		}
 
 	}
@@ -154,6 +167,61 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 	go client.readPump(w.MWClient)
 }
 
-func (h *Hub) Broadcast(msg any) {
+func (h *Hub) Pause(client *Client) {
+	h.pause <- PauseRequest{client: client, paused: true}
+}
+
+func (h *Hub) Unpause(client *Client) {
+	h.pause <- PauseRequest{client: client, paused: false}
+}
+
+func (h *Hub) Broadcast(msg global.WrittenUpdate) {
 	h.broadcast <- msg
+}
+
+func ProcessData(d global.WrittenUpdate, client *Client) (bool, global.WrittenUpdate) {
+	switch data := any(d).(type) {
+	case global.RecentChange:
+		if client.paused {
+			return false, data
+		}
+		_, userWatched := client.WatchedUsers[data.User.Username]
+		_, pageWatched := client.WatchedPages[WikiPage{
+			Title: data.Title,
+			Wiki:  data.Wiki,
+		}]
+
+		data.Watched = userWatched
+		data.PageWatched = pageWatched
+
+		if data.User.EditCount <= client.MaxEditCount && slices.Contains(client.Wikis, data.Wiki) {
+			client.SeenPages = append(client.SeenPages, WikiPage{
+				Title: data.Title,
+				Wiki:  data.Wiki,
+			})
+			return true, data
+		}
+		if pageWatched || userWatched {
+			client.SeenPages = append(client.SeenPages, WikiPage{
+				Title: data.Title,
+				Wiki:  data.Wiki,
+			})
+			if length := len(client.SeenPages); length > 200 {
+				client.SeenPages = client.SeenPages[length-200:]
+			}
+			return true, data
+		}
+		return false, data
+	case global.RevUpdate:
+		return slices.Contains(client.SeenPages, WikiPage{
+			Title: data.Page,
+			Wiki:  data.Wiki,
+		}), data
+	case global.BlockUpdate:
+		return true, data
+	default:
+		fmt.Println("No type found for event")
+		fmt.Println(d)
+		return false, d
+	}
 }

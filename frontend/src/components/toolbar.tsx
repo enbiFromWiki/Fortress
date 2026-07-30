@@ -2,7 +2,8 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import RevertSvg from '../assets/revert.svg?react';
 import ArrowSvg from '../assets/arrow.svg?react';
 import {
-    rollAndWarnCurrentEdit,
+    rollAndAutoWarnCurrentEdit,
+    rollAndSingleIssueWarnCurrentEdit,
     rollbackCurrentEdit,
     setWatchedCurrentUser,
 } from '../websocket/sendingfuncs';
@@ -11,13 +12,14 @@ import UserSvg from '../assets/user.svg?react';
 import { useEditStore } from '../stores/editstore';
 import { useUserStore } from '../stores/userstore';
 import DotsSvg from '../assets/dots.svg?react';
-import {
-    DEFAULT_WARNINGS,
-    type RBMenuCategory,
-    type RBMenuSingleItem,
-} from '../data/constants';
 import { Trans } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
+import {
+    useAuthStore,
+    type RBMenuCategory,
+    type RBMenuSingleItem,
+    type Warnings,
+} from '../stores/authstore';
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');
@@ -104,6 +106,7 @@ function RollbackMenu({
     const [usedCategory, setUsedCategory] = useState('');
     const changeCatOnHover = usedCategory !== '';
     const { t } = useTranslation();
+    const warnings: Warnings = useAuthStore((i) => i.config) ?? {};
     return (
         <div
             onClick={(e) => e.stopPropagation()}
@@ -115,7 +118,7 @@ function RollbackMenu({
             >
                 <div>{t('no-warn-rollback')}</div>
             </button>
-            {(DEFAULT_WARNINGS[wiki] ?? []).map((i) => (
+            {(warnings[wiki] ?? []).map((i) => (
                 <RollbackMenuCategory
                     key={i.name}
                     usedCategory={usedCategory}
@@ -174,9 +177,19 @@ function RollbackMenuItemSet({ items }: { items: RBMenuSingleItem[] }) {
             {items.map((item) => (
                 <button
                     key={item.name}
-                    onClick={() =>
-                        rollAndWarnCurrentEdit(item.summary, item.template)
-                    }
+                    onClick={() => {
+                        if (item.single) {
+                            rollAndSingleIssueWarnCurrentEdit(
+                                item.summary,
+                                item.template
+                            );
+                        } else {
+                            rollAndAutoWarnCurrentEdit(
+                                item.summary,
+                                item.template
+                            );
+                        }
+                    }}
                     className="hover:bg-[#1a1a1a] transition cursor-pointer not-last:after:translate-y-0.5 not-last:after:absolute not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 overflow-visible flex items-center"
                 >
                     <div>{item.name}</div>

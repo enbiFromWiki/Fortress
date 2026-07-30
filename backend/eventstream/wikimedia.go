@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	//"gateway/mediawiki"
+	"gateway/global"
 	"gateway/mediawiki"
 	"gateway/wshandler"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/r3labs/sse/v2"
 )
 
@@ -79,10 +79,10 @@ func (w *WMStreamer) StartStream() {
 
 				fmt.Println(out.String())
 				fmt.Println(formattedTitle, "got blocked!")
-				w.wss.Hub.Broadcast(gin.H{
-					"type": "block",
-					"user": formattedTitle,
-					"wiki": dataJson.Wiki,
+				w.wss.Hub.Broadcast(global.BlockUpdate{
+					Type: "block",
+					User: formattedTitle,
+					Wiki: dataJson.Wiki,
 				})
 				return
 			}
@@ -90,27 +90,16 @@ func (w *WMStreamer) StartStream() {
 				return
 			}
 
-			for client := range w.wss.Hub.Clients {
-				if slices.Contains(client.SeenPages, wshandler.WikiPage{
-					Title: dataJson.Page.PageTitle,
-					Wiki:  dataJson.WikiID,
-				}) {
-					select {
-					case client.Send <- map[string]any{
-						"type":     "revchange",
-						"page":     strings.Replace(dataJson.Page.PageTitle, "_", " ", -1),
-						"wiki":     dataJson.WikiID,
-						"comment":  dataJson.Revision.Comment,
-						"user":     dataJson.Performer.UserText,
-						"revid":    dataJson.Revision.RevID,
-						"parentid": dataJson.Revision.RevParentID,
-						"domain":   dataJson.Meta.Domain,
-					}:
-					default:
-						fmt.Println("Client too slow: dropping message")
-					}
-				}
-			}
+			w.wss.Hub.Broadcast(global.RevUpdate{
+				Type:     "revchange",
+				Page:     strings.ReplaceAll(dataJson.Page.PageTitle, "_", " "),
+				Wiki:     dataJson.WikiID,
+				Comment:  dataJson.Revision.Comment,
+				User:     dataJson.Performer.UserText,
+				Revid:    dataJson.Revision.RevID,
+				Parentid: dataJson.Revision.RevParentID,
+				Domain:   dataJson.Meta.Domain,
+			})
 
 			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "frwiki", "testwiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
 				if user.UserText == "" {
@@ -140,35 +129,6 @@ type MWCompareJSON struct {
 	} `json:"compare"`
 }
 
-type WSUser struct {
-	Username       string    `json:"username"`
-	Userid         int       `json:"userid"`
-	IsTemp         bool      `json:"istemp"`
-	EditCount      int       `json:"editcount"`
-	UserGroups     []string  `json:"usergroups"`
-	UserCreateDate time.Time `json:"userage"`
-}
-
-type RecentChangeJSON struct {
-	User          WSUser         `json:"user"`
-	Title         string         `json:"title"`
-	DiffHTML      string         `json:"diffhtml"`
-	NewID         int64          `json:"newid"`
-	OldID         int64          `json:"oldid"`
-	Wiki          string         `json:"wiki"`
-	WikiDomain    string         `json:"domain"`
-	DiffSize      int            `json:"diffsize"`
-	ParsedComment string         `json:"parsedcomment"`
-	History       []*HistoryEdit `json:"history"`
-	Type          string         `json:"type"`
-	Watched       bool           `json:"watched"`
-	PageWatched   bool           `json:"pagewatched"`
-	OldSize       int            `json:"oldsize"`
-	NewSize       int            `json:"newsize"`
-	DiffID        int            `json:"diffid"`
-	Level         int            `json:"level"`
-}
-
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	newid := streamData.Revision.RevID
 	oldid := streamData.Revision.RevParentID
@@ -192,7 +152,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		return
 	}
 
-	var histData HistoryJSON
+	var histData global.HistoryJSON
 	json.Unmarshal(res, &histData)
 
 	history := histData.Query.Pages[0].Revisions
@@ -231,9 +191,6 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	if !ok {
 		fmt.Println(title, wikiID)
 	}
-
-	userEC := user.EditCount
-
 	var data MWCompareJSON
 
 	res, err = w.mwClient.Get(map[string]string{
@@ -255,8 +212,8 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	body := data.Compare.Body
 	comment := data.Compare.ToParsedComment
 	performer := streamData.Performer
-	sendingData := RecentChangeJSON{
-		User: WSUser{
+	sendingData := global.RecentChange{
+		User: global.WSUser{
 			Username:       performer.UserText,
 			Userid:         performer.UserID,
 			IsTemp:         performer.IsTemp,
@@ -281,36 +238,5 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 		Level:         warningLevel,
 	}
 
-	for client := range w.wss.Hub.Clients {
-		client.SeenPages = append(client.SeenPages, wshandler.WikiPage{
-			Title: streamData.Page.PageTitle,
-			Wiki:  streamData.WikiID,
-		})
-		if watched, ok := client.WatchedUsers[user.UserText]; ok && watched {
-			fmt.Println("WATCHED USER:::", user.UserText)
-			if watched, ok := client.WatchedPages[wshandler.WikiPage{
-				Title: title,
-				Wiki:  wikiID,
-			}]; ok && watched {
-				sendingData.PageWatched = true
-			}
-			sendingData.Watched = true
-			client.Send <- sendingData
-			continue
-		}
-		if watched, ok := client.WatchedPages[wshandler.WikiPage{
-			Title: title,
-			Wiki:  wikiID,
-		}]; ok && watched {
-			fmt.Println("WATCHED PAGE:::", streamData.Page.PageTitle+"@"+streamData.WikiID)
-			sendingData.PageWatched = true
-			client.Send <- sendingData
-			continue
-		} else {
-			fmt.Println(client.WatchedPages, title)
-		}
-		if slices.Contains(client.Wikis, wikiID) && (userEC <= client.MaxEditCount || wikiID == "testwiki") {
-			client.Send <- sendingData
-		}
-	}
+	w.wss.Hub.Broadcast(sendingData)
 }

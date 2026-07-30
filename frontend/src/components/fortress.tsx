@@ -11,7 +11,7 @@ import { History } from './hist';
 import {
     autoSetWatchedCurrentPage,
     autoSetWatchedCurrentUser,
-    rollAndWarnCurrentEdit,
+    rollAndAutoWarnCurrentEdit,
     rollbackCurrentEdit,
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
@@ -41,16 +41,19 @@ export function Fortress() {
                 decrement();
             }
             if (e.key === 'q') {
-                rollAndWarnCurrentEdit('non-constructive edits', 'vandalism');
+                rollAndAutoWarnCurrentEdit(
+                    'non-constructive edits',
+                    'vandalism'
+                );
             }
             if (e.key === 'd') {
-                rollAndWarnCurrentEdit('disruptive edits', 'disruptive');
+                rollAndAutoWarnCurrentEdit('disruptive edits', 'disruptive');
             }
             if (e.key === 'u') {
-                rollAndWarnCurrentEdit('unsourced additions', 'unsourced');
+                rollAndAutoWarnCurrentEdit('unsourced additions', 'unsourced');
             }
             if (e.key === 't') {
-                rollAndWarnCurrentEdit('test edit', 'test');
+                rollAndAutoWarnCurrentEdit('test edit', 'test');
             }
             if (e.key === 'w') {
                 autoSetWatchedCurrentUser();

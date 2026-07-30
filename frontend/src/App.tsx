@@ -12,14 +12,12 @@ import { Forbidden } from './components/forbidden';
 import { FourOhFour } from './components/404';
 
 function App() {
-    const init = useAuthStore((i) => i.init);
+    const { loadUser, loadConfig } = useAuthStore();
 
     useEffect(() => {
-        async function start() {
-            await init();
-        }
-        start();
-    }, [init]);
+        loadUser();
+        loadConfig();
+    }, [loadConfig, loadUser]);
     return (
         <>
             <title>Fortress</title>

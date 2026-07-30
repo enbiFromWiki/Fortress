@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,7 +27,7 @@ func (client *MediaWikiClient) DoWithUA(req *http.Request) (*http.Response, erro
 		return nil, err
 	}
 	if !IsOK(res) {
-		return nil, errors.New(res.Status)
+		return nil, errors.New(strconv.Itoa(res.StatusCode))
 	}
 	return res, err
 }

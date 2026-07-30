@@ -1,23 +1,42 @@
 import { create } from 'zustand';
+import { parse } from 'yaml';
+
+export type RBMenuSingleItem = {
+    name: string;
+    template: string;
+    summary: string;
+    details?: string;
+    single?: boolean;
+};
+
+export type Warnings = Record<string, RBMenuCategory[]>;
+
+export type RBMenuCategory = {
+    name: string;
+    entries: RBMenuSingleItem[];
+};
 
 type AuthStore = {
     user: string | null;
     loading: boolean;
-    status: 'unknown' | 'unauthorized' | 'forbidden' | 'authorized';
-    init: () => Promise<void>;
+    status: 'unknown' | 'unauthorized' | 'forbidden' | 'authorized' | 'error';
     logout: () => Promise<void>;
     isConnected: boolean;
     setConnected: (i: boolean) => void;
     rollbackWikis: string[];
+    config: Warnings | undefined;
+    loadConfig: () => Promise<void>;
+    loadUser: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
     loading: true,
+    config: undefined,
     status: 'unknown',
     rollbackWikis: [],
 
-    init: async () => {
+    loadUser: async () => {
         try {
             console.log('starting auth call');
 
@@ -76,5 +95,39 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
             isConnected: i,
         });
+    },
+    async loadConfig() {
+        try {
+            const res = await fetch(
+                'https://test.wikipedia.org/w/api.php?action=parse&page=User:enbi/Fortress/config.yaml.js&prop=wikitext&format=json&origin=*&formatversion=2'
+            );
+            const data = await res.json();
+            const text = data?.parse?.wikitext;
+            if (!text) {
+                set({
+                    status: 'error',
+                });
+                console.log(data);
+                return;
+            }
+            if (text.startsWith('<')) {
+                console.log(data);
+                // wikimedia returns HTML on an action=raw 404
+                set({
+                    status: 'error',
+                });
+                return;
+            }
+            const config = parse(text);
+            console.log('Config: ', config);
+            set({
+                config: config,
+            });
+        } catch (e) {
+            set({
+                status: 'error',
+            });
+            console.error(e);
+        }
     },
 }));

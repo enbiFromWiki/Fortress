@@ -12,11 +12,12 @@ import (
 type WarnResult string
 
 const (
-	Failed      WarnResult = "failed"
-	Warned      WarnResult = "warned"
-	Reported    WarnResult = "reported"
-	AlreadyGone WarnResult = "alreadygone" // already reported
-	NoAction    WarnResult = "noaction"
+	Failed        WarnResult = "failed"
+	Warned        WarnResult = "warned"
+	Reported      WarnResult = "reported"
+	AlreadyGone   WarnResult = "alreadygone" // already reported
+	NoAction      WarnResult = "noaction"
+	AlreadyWarned WarnResult = "alreadywarned"
 )
 
 type CSRF struct {
@@ -40,6 +41,26 @@ type ContentResponseJSON struct {
 			} `json:"revisions"`
 		} `json:"pages"`
 	} `json:"query"`
+}
+
+func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok string, domain string, title string) (WarnResult, error) {
+	talkPage := "User talk:" + user
+	content, _, err := c.GetSinglePageContent(talkPage, domain)
+	if err != nil {
+		return Failed, err
+	}
+
+	if regexp.MustCompile("<!--\\s*Template:" + template + "\\s*-->").MatchString(content) {
+		return AlreadyWarned, nil
+	}
+
+	newTalk := ConstructNewTalk(template, content, title)
+	err = c.Edit(talkPage, domain, tok, newTalk, "Warning [[Special:Contributions/"+user+"|"+user+"]]: {{[[Template:"+template+"|"+template+"]]}} (Fortress-Beta)", false, true)
+	if err != nil {
+		return Failed, err
+	}
+
+	return Warned, err
 }
 
 func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string, title string) (WarnResult, error) {
@@ -107,7 +128,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 		"format":  "json",
 		"title":   talkPage,
 		"text":    newContent,
-		"summary": "Warning [[Special:Contributions/" + user + "|" + user + "]]: {{[[Template:" + fullTemplate + "|" + fullTemplate + "]]}} ([[m:Fortress|Fortress]])",
+		"summary": "Warning [[Special:Contributions/" + user + "|" + user + "]]: {{[[Template:" + fullTemplate + "|" + fullTemplate + "]]}} (Fortress-Beta)",
 		"token":   csrf,
 	}, tok, "https://"+wiki+"/w/api.php")
 	if err != nil {
@@ -153,6 +174,7 @@ func ConstructNewTalk(template string, content string, tmParams ...string) strin
 	tp[lastHeaderIndex].Content = newContent
 
 	edit := MakeTalkPage(tp)
+	fmt.Println("EDIT:::", edit)
 	return edit
 }
 
@@ -227,7 +249,7 @@ func MakeTalkPage(sects []TalkSection) string {
 func SplitTalkSections(content string) []TalkSection {
 	sects := []TalkSection{}
 	lines := strings.Split(content, "\n")
-	headerRegex := regexp.MustCompile(`^\s*==\s*(.*?)\s*==\s*$`)
+	headerRegex := regexp.MustCompile(`^\s*==\s*(.+?)\s*==\s*$`)
 	inSection := false
 	cache := TalkSection{}
 	for _, line := range lines {

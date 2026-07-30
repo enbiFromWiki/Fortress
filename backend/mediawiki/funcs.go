@@ -92,7 +92,7 @@ func (c *MediaWikiClient) ReportToEnwikiAIV(user string, reason string, tok stri
 		return false, nil
 	}
 
-	err = c.Edit(aivPage, "en.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting [[Special:Contributions/"+user+"|"+user+"]] ([[m:Fortress|Fortress]])", true, false)
+	err = c.Edit(aivPage, "en.wikipedia.org", tok, "\n*{{vandal|"+user+"}} &ndash; "+reason+" ~~~~", "Reporting [[Special:Contributions/"+user+"|"+user+"]] (Fortress-Beta)", true, false)
 	if err != nil {
 		return false, err
 	}
