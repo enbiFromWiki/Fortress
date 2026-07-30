@@ -1,20 +1,46 @@
 import { create } from 'zustand';
 import { parse } from 'yaml';
 
-export type RBMenuSingleItem = {
+// export type RBMenuSingleItem = {
+//     name: string;
+//     template: string;
+//     summary: string;
+//     details?: string;
+//     single?: boolean;
+// };
+export interface ConfigWiki {
+    warnSummary: string;
+    rollbackOuterSummary: string;
+    keymaps: KeyMap[];
+    menuCategories: RBMenuCategory[];
+}
+
+export interface KeyMap {
+    key: string;
+    summary: string;
+    template?: string;
+    overrideOuter?: boolean;
+}
+
+export interface RBMenuCategory {
+    name: string;
+    entries: RBMenuWarning[];
+}
+
+export interface RBMenuWarning {
     name: string;
     template: string;
     summary: string;
     details?: string;
     single?: boolean;
-};
+}
 
-export type Warnings = Record<string, RBMenuCategory[]>;
+export type Warnings = Record<string, ConfigWiki>;
 
-export type RBMenuCategory = {
-    name: string;
-    entries: RBMenuSingleItem[];
-};
+// export type RBMenuCategory = {
+//     name: string;
+//     warnings: RBMenuSingleItem[];
+// };
 
 type AuthStore = {
     user: string | null;

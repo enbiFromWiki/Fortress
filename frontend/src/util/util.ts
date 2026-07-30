@@ -1,3 +1,4 @@
+import { useAuthStore } from '../stores/authstore';
 import { useEditStore } from '../stores/editstore';
 import type { WSResponse } from '../types/types';
 
@@ -79,5 +80,19 @@ export async function getAndSetNewDiff(
         newsize: Number(compare.tosize),
         oldsize: Number(compare.fromsize),
         diffsize: Number(compare.tosize) - Number(compare.fromsize),
+    });
+}
+
+export function getConfig() {
+    return useAuthStore.getState().config;
+}
+
+export function replaceDollars(text: string, ...params: string[]) {
+    return text.replace(/\$(\d+)/g, (_, g) => {
+        const replacement = params[(Number(g) || 9999) - 1];
+        if (replacement === undefined)
+            throw new Error('Not enough params to replace');
+
+        return replacement;
     });
 }

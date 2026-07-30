@@ -161,7 +161,7 @@ function RollbackMenuCategory({
             <ArrowSvg className="h-6 w-6" />
 
             {usedCategory === category.name && (
-                <RollbackMenuItemSet items={category.entries} />
+                <RollbackMenuItemSet items={category.warnings} />
             )}
         </button>
     );

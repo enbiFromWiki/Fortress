@@ -11,8 +11,6 @@ import { History } from './hist';
 import {
     autoSetWatchedCurrentPage,
     autoSetWatchedCurrentUser,
-    rollAndAutoWarnCurrentEdit,
-    rollbackCurrentEdit,
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
 import { Settings } from './settings';
@@ -40,29 +38,15 @@ export function Fortress() {
             if (e.key === '[') {
                 decrement();
             }
-            if (e.key === 'q') {
-                rollAndAutoWarnCurrentEdit(
-                    'non-constructive edits',
-                    'vandalism'
-                );
-            }
-            if (e.key === 'd') {
-                rollAndAutoWarnCurrentEdit('disruptive edits', 'disruptive');
-            }
-            if (e.key === 'u') {
-                rollAndAutoWarnCurrentEdit('unsourced additions', 'unsourced');
-            }
-            if (e.key === 't') {
-                rollAndAutoWarnCurrentEdit('test edit', 'test');
-            }
+
             if (e.key === 'w') {
                 autoSetWatchedCurrentUser();
             }
-            if (e.key === 'r') {
-                rollbackCurrentEdit();
-            }
             if (e.key === 'p') {
                 autoSetWatchedCurrentPage();
+            }
+            if (e.key === 'g') {
+                console.log(window.getSelection()?.toString());
             }
         };
         document.addEventListener('keydown', handleKey);

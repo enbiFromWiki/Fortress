@@ -1,8 +1,6 @@
 import { useTooltipStore } from '../stores/tooltipstore';
 import type { PointerEvent } from 'react';
 
-// Hook used to add tooltips.
-
 export function useTooltip() {
     const setPosition = useTooltipStore((s) => s.setPosition);
     const setContent = useTooltipStore((s) => s.setContent);
