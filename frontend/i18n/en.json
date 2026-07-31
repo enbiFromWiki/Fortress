@@ -28,5 +28,7 @@
     "wikis-settings-caption": "Wikis to be monitored.",
     "diff-link-caption": "Add clickable wikilinks to diff views",
     "scrollbar-caption": "Hide all scrollbars",
-    "ui": "UI"
+    "ui": "UI",
+    "ws-pause": "Pause",
+    "ws-unpause": "Unpause"
 }

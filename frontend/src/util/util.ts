@@ -1,6 +1,10 @@
-import { useAuthStore } from '../stores/authstore';
+import { useAuthStore, type KeyMap } from '../stores/authstore';
 import { useEditStore } from '../stores/editstore';
 import type { WSResponse } from '../types/types';
+import {
+    rollAndAutoWarnCurrentEdit,
+    rollbackCurrentEdit,
+} from '../websocket/sendingfuncs';
 
 export async function fetchCred(
     input: RequestInfo | URL,
@@ -95,4 +99,29 @@ export function replaceDollars(text: string, ...params: string[]) {
 
         return replacement;
     });
+}
+
+export function handleRollbackKeyMap(key: string) {
+    const edit = useEditStore.getState().selectedEdit;
+    if (!edit) return;
+    const config = getConfig();
+    if (!config) return;
+    const wikiConfig = config[edit.wiki];
+    if (!wikiConfig) return;
+    const keyMap: KeyMap | undefined = wikiConfig.keymaps.find(
+        (i) => i.key === key
+    );
+    if (!keyMap) return;
+    const summary = keyMap.overrideOuter
+        ? keyMap.summary
+        : replaceDollars(
+              wikiConfig.rollbackOuterSummary,
+              keyMap.summary,
+              edit.user.username
+          );
+    if (keyMap.template) {
+        rollAndAutoWarnCurrentEdit(summary, keyMap.template);
+    } else {
+        rollbackCurrentEdit(summary);
+    }
 }

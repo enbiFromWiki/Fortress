@@ -26,12 +26,12 @@ export function Bottom() {
     }
     return (
         <div className="flex items-center justify-end h-full">
-            <div
-                className="text-sm center text-neutral-400 px-2 transition h-full hover:bg-neutral-800"
+            <button
+                className="text-sm center cursor-pointer text-neutral-400 px-2 transition h-full hover:bg-neutral-800"
                 onClick={handleClick}
             >
-                {playing ? 'Pause' : 'Unpause'}
-            </div>
+                {playing ? t('ws-pause') : t('ws-unpause')}
+            </button>
             <div className="text-sm center px-2 h-full transition hover:bg-neutral-800">
                 {connected ? (
                     <span className="text-green-400">{t('ws-connected')}</span>

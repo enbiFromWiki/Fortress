@@ -2,9 +2,8 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import RevertSvg from '../assets/revert.svg?react';
 import ArrowSvg from '../assets/arrow.svg?react';
 import {
-    rollAndAutoWarnCurrentEditWithEnglishSummary,
-    rollAndSingleIssueWarnCurrentEditWithEnglishSummary,
-    rollbackCurrentEditWithEnglishSummary,
+    rollAndAutoWarnCurrentEdit,
+    rollAndSingleIssueWarnCurrentEdit,
     setWatchedCurrentUser,
 } from '../websocket/sendingfuncs';
 import { useTooltip } from '../hooks/useTooltip';
@@ -14,12 +13,10 @@ import { useUserStore } from '../stores/userstore';
 import DotsSvg from '../assets/dots.svg?react';
 import { Trans } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
-import {
-    useAuthStore,
-    type RBMenuCategory,
-    type RBMenuSingleItem,
-    type Warnings,
-} from '../stores/authstore';
+import { type RBMenuCategory, type RBMenuWarning } from '../stores/authstore';
+import { handleRollbackKeyMap, replaceDollars } from '../util/util';
+import { useConfig } from '../hooks/useConfig';
+import type { WSResponse } from '../types/types';
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');
@@ -31,7 +28,6 @@ export function Toolbar() {
         (i) => i.users[edit?.user?.username ?? '']?.watched
     );
     if (!edit) return null;
-    const wiki = edit.wiki;
 
     function handleClick() {
         setMenu((i) => (i === 'rollback' ? '' : 'rollback'));
@@ -49,7 +45,7 @@ export function Toolbar() {
                     </div>
                 </button>
                 {menu === 'rollback' && (
-                    <RollbackMenu wiki={wiki} setMenu={setMenu} />
+                    <RollbackMenu edit={edit} setMenu={setMenu} />
                 )}
             </div>
             <div className="relative z-auto h-full w-18">
@@ -86,10 +82,10 @@ export function Toolbar() {
 
 function RollbackMenu({
     setMenu,
-    wiki,
+    edit,
 }: {
     setMenu: Dispatch<SetStateAction<string>>;
-    wiki: string;
+    edit: WSResponse;
 }) {
     useEffect(() => {
         const handleClick = (e: PointerEvent) => {
@@ -105,20 +101,30 @@ function RollbackMenu({
 
     const [usedCategory, setUsedCategory] = useState('');
     const changeCatOnHover = usedCategory !== '';
+    const wiki = edit.wiki;
+
     const { t } = useTranslation();
-    const warnings: Warnings = useAuthStore((i) => i.config) ?? {};
+    const config = useConfig();
+    const wikiConfig = config?.[wiki];
+    if (!wikiConfig) return null;
+    const outerSummary = replaceDollars(
+        wikiConfig.rollbackOuterSummary,
+        '$1',
+        edit.user.username
+    );
+    const cats = wikiConfig.menuCategories;
     return (
         <div
             onClick={(e) => e.stopPropagation()}
-            className="text-[0.925rem] text-neutral-300 an-fade-in rb-menu absolute left-0 bottom-18 flex flex-col gap-1 py-1 w-50 rounded-xl bg-neutral-900"
+            className="text-[0.925rem] text-neutral-300 an-fade-in rb-menu absolute left-0 bottom-18 flex flex-col gap-1 p-1 w-50 rounded-xl bg-neutral-900"
         >
             <button
-                onClick={() => rollbackCurrentEditWithEnglishSummary()}
-                className="hover:bg-[#1a1a1a] not-last:after:absolute not-last:after:translate-y-0.5 not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 mx-1 overflow-visible rounded-lg flex items-center justify-between cursor-pointer"
+                onClick={() => handleRollbackKeyMap('r')}
+                className="hover:bg-[#1a1a1a] not-last:after:absolute not-last:after:translate-y-0.5 not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 overflow-visible rounded-lg flex items-center justify-between cursor-pointer"
             >
                 <div>{t('no-warn-rollback')}</div>
             </button>
-            {(warnings[wiki] ?? []).map((i) => (
+            {(cats ?? []).map((i) => (
                 <RollbackMenuCategory
                     key={i.name}
                     usedCategory={usedCategory}
@@ -134,6 +140,8 @@ function RollbackMenu({
                         setUsedCategory(i.name);
                     }}
                     category={i}
+                    outerSummary={outerSummary}
+                    setMenu={setMenu}
                 />
             ))}
         </div>
@@ -141,33 +149,50 @@ function RollbackMenu({
 }
 
 function RollbackMenuCategory({
+    outerSummary,
     category,
     onClick,
     usedCategory,
     onMouseEnter,
+    setMenu,
 }: {
     onClick?: () => void;
     onMouseEnter?: () => void;
     category: RBMenuCategory;
     usedCategory: string;
+    outerSummary: string;
+    setMenu: (value: SetStateAction<string>) => void;
 }) {
     return (
-        <button
-            onMouseEnter={onMouseEnter}
-            onClick={onClick}
-            className="hover:bg-[#1a1a1a] cursor-pointer not-last:after:translate-y-0.5 not-last:after:absolute not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 mx-1 overflow-visible rounded-lg flex items-center justify-between"
-        >
-            <div>{category.name}</div>
-            <ArrowSvg className="h-6 w-6" />
-
+        <div className="relative w-full h-full not-last:after:translate-y-0.5 not-last:after:absolute not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-1/2 not-last:after:-translate-x-1/2 not-last:after:bg-neutral-700 not-last:after:block">
+            <button
+                onMouseEnter={onMouseEnter}
+                onClick={onClick}
+                className="w-full h-full hover:bg-[#1a1a1a] cursor-pointer an-fade-in relative rb-menu py-2 px-2 overflow-visible rounded-lg flex items-center justify-between"
+            >
+                <div>{category.name}</div>
+                <ArrowSvg className="h-6 w-6" />
+            </button>
             {usedCategory === category.name && (
-                <RollbackMenuItemSet items={category.warnings} />
+                <RollbackMenuItemSet
+                    items={category.warnings}
+                    outerSummary={outerSummary}
+                    setMenu={setMenu}
+                />
             )}
-        </button>
+        </div>
     );
 }
 
-function RollbackMenuItemSet({ items }: { items: RBMenuSingleItem[] }) {
+function RollbackMenuItemSet({
+    items,
+    outerSummary,
+    setMenu,
+}: {
+    items: RBMenuWarning[];
+    outerSummary: string;
+    setMenu: (value: SetStateAction<string>) => void;
+}) {
     const tooltip = useTooltip();
     return (
         <div
@@ -178,19 +203,21 @@ function RollbackMenuItemSet({ items }: { items: RBMenuSingleItem[] }) {
                 <button
                     key={item.name}
                     onClick={() => {
+                        setMenu('');
+                        const summary = replaceDollars(
+                            outerSummary,
+                            item.summary
+                        );
                         if (item.single) {
-                            rollAndSingleIssueWarnCurrentEditWithEnglishSummary(
-                                item.summary,
+                            rollAndSingleIssueWarnCurrentEdit(
+                                summary,
                                 item.template
                             );
                         } else {
-                            rollAndAutoWarnCurrentEditWithEnglishSummary(
-                                item.summary,
-                                item.template
-                            );
+                            rollAndAutoWarnCurrentEdit(summary, item.template);
                         }
                     }}
-                    className="hover:bg-[#1a1a1a] transition cursor-pointer not-last:after:translate-y-0.5 not-last:after:absolute not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative rb-menu py-2 px-2 overflow-visible flex items-center"
+                    className="hover:bg-[#1a1a1a] remove-menu transition cursor-pointer not-last:after:translate-y-0.5 not-last:after:absolute not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:bg-neutral-700 not-last:after:block an-fade-in relative py-2 px-2 overflow-visible flex items-center"
                 >
                     <div>{item.name}</div>
                     {item.details && (

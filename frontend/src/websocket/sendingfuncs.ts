@@ -1,6 +1,7 @@
 import { useEditStore } from '../stores/editstore';
 import { usePageStore } from '../stores/pagestore';
 import { useUserStore } from '../stores/userstore';
+import { getConfig } from '../util/util';
 import { socket } from './websocket';
 
 const pending = new Map();
@@ -249,17 +250,27 @@ export function autoSetWatchedCurrentPage() {
 
 export async function rollAndAutoWarnCurrentEdit(
     summary: string,
-    template: string
+    template: string,
+    warnsummary: string | null = null
 ): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
     const edit = store.selectedEdit;
+
     if (!edit) return null;
+
+    if (!warnsummary) {
+        warnsummary = getConfig()?.[edit.wiki]?.warnSummary ?? null;
+    }
+    if (!warnsummary) {
+        throw new Error('no config');
+    }
     const obj = {
         action: 'rollandwarn',
         targetuser: edit.user.username,
         targettitle: edit.title,
         targetdomain: edit.domain,
         summary,
+        warnsummary,
         warntp: `uw-${template}`,
         level: 'auto',
     };

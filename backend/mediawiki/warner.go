@@ -43,7 +43,7 @@ type ContentResponseJSON struct {
 	} `json:"query"`
 }
 
-func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok string, domain string, title string) (WarnResult, error) {
+func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok string, domain string, title string, warnSummary string) (WarnResult, error) {
 	talkPage := "User talk:" + user
 	content, _, err := c.GetSinglePageContent(talkPage, domain)
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok stri
 	}
 
 	newTalk := ConstructNewTalk(template, content, title)
-	err = c.Edit(talkPage, domain, tok, newTalk, "Warning [[Special:Contributions/"+user+"|"+user+"]]: {{[[Template:"+template+"|"+template+"]]}} (Fortress-Beta)", false, true)
+	err = c.Edit(talkPage, domain, tok, newTalk, strings.ReplaceAll(warnSummary, "$1", template), false, true)
 	if err != nil {
 		return Failed, err
 	}
@@ -63,7 +63,7 @@ func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok stri
 	return Warned, err
 }
 
-func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string, title string) (WarnResult, error) {
+func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string, title string, warnSummary string) (WarnResult, error) {
 	talkPage := "User talk:" + user
 	content, exists, err := c.GetSinglePageContent(talkPage, wiki)
 	if err != nil {
@@ -128,7 +128,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 		"format":  "json",
 		"title":   talkPage,
 		"text":    newContent,
-		"summary": "Warning [[Special:Contributions/" + user + "|" + user + "]]: {{[[Template:" + fullTemplate + "|" + fullTemplate + "]]}} (Fortress-Beta)",
+		"summary": strings.ReplaceAll(warnSummary, "$1", fullTemplate),
 		"token":   csrf,
 	}, tok, "https://"+wiki+"/w/api.php")
 	if err != nil {

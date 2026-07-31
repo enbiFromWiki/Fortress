@@ -24,7 +24,7 @@ export type KeyMap = {
 
 export type RBMenuCategory = {
     name: string;
-    entries: RBMenuWarning[];
+    warnings: RBMenuWarning[];
 };
 
 export type RBMenuWarning = {
@@ -35,7 +35,7 @@ export type RBMenuWarning = {
     single?: boolean;
 };
 
-export type Warnings = Record<string, ConfigWiki>;
+export type Config = Record<string, ConfigWiki>;
 
 // export type RBMenuCategory = {
 //     name: string;
@@ -50,7 +50,7 @@ type AuthStore = {
     isConnected: boolean;
     setConnected: (i: boolean) => void;
     rollbackWikis: string[];
-    config: Warnings | undefined;
+    config: Config | undefined;
     loadConfig: () => Promise<void>;
     loadUser: () => Promise<void>;
 };
