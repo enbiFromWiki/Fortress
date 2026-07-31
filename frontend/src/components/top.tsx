@@ -1,6 +1,6 @@
 import { useAuthStore } from '../stores/authstore';
 import { useSettingsStore } from '../stores/settingsstore';
-import { rollAndAutoWarnCurrentEdit } from '../websocket/sendingfuncs';
+import { rollAndAutoWarnCurrentEditWithEnglishSummary } from '../websocket/sendingfuncs';
 import Delete from '../assets/bin.svg?react';
 import { useTooltip } from '../hooks/useTooltip';
 import { useEditStore } from '../stores/editstore';
@@ -12,7 +12,7 @@ export function TopBar() {
     const clearQueue = useEditStore((i) => i.clearQueue);
     async function rollback() {
         try {
-            await rollAndAutoWarnCurrentEdit(
+            await rollAndAutoWarnCurrentEditWithEnglishSummary(
                 'non-constructive edits',
                 'vandalism'
             );

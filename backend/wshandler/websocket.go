@@ -25,6 +25,11 @@ type WikiPage struct {
 	Wiki  string
 }
 
+type Filters struct {
+	MaxEditCount int
+	Wikis        []string
+}
+
 type Client struct {
 	conn         *ws.Conn
 	Send         chan any //struct
@@ -32,10 +37,9 @@ type Client struct {
 	token        string
 	SeenPages    []WikiPage
 	paused       bool
-	MaxEditCount int
-	Wikis        []string
-	WatchedUsers map[string]bool
-	WatchedPages map[WikiPage]bool
+	watchedUsers map[string]bool
+	watchedPages map[WikiPage]bool
+	filters      Filters
 }
 
 type PauseRequest struct {
@@ -43,12 +47,32 @@ type PauseRequest struct {
 	paused bool
 }
 
+type WatchUserRequest struct {
+	client *Client
+	watch  bool
+	user   string
+}
+
+type WatchPageRequest struct {
+	client *Client
+	page   WikiPage
+	watch  bool
+}
+
+type FilterChangeRequest struct {
+	client  *Client
+	filters Filters
+}
+
 type Hub struct {
-	Clients    map[*Client]bool
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan global.WrittenUpdate //struct
-	pause      chan PauseRequest
+	clients      map[*Client]bool
+	register     chan *Client
+	unregister   chan *Client
+	broadcast    chan global.WrittenUpdate //struct
+	pause        chan PauseRequest
+	watchUser    chan WatchUserRequest
+	watchPage    chan WatchPageRequest
+	changeFilter chan FilterChangeRequest
 }
 
 type WebSocketService struct {
@@ -59,7 +83,7 @@ type WebSocketService struct {
 func New(mwclient *mediawiki.MediaWikiClient) *WebSocketService {
 	return &WebSocketService{
 		Hub: &Hub{
-			Clients:    make(map[*Client]bool),
+			clients:    make(map[*Client]bool),
 			register:   make(chan *Client),
 			unregister: make(chan *Client),
 			broadcast:  make(chan global.WrittenUpdate),
@@ -73,15 +97,15 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.Clients[client] = true
+			h.clients[client] = true
 
 		case client := <-h.unregister:
-			if _, exists := h.Clients[client]; exists {
-				delete(h.Clients, client)
+			if _, exists := h.clients[client]; exists {
+				delete(h.clients, client)
 				close(client.Send)
 			}
 		case message := <-h.broadcast:
-			for client := range h.Clients {
+			for client := range h.clients {
 				shouldBeSent, processedMessage := ProcessData(message, client)
 				if !shouldBeSent {
 					continue
@@ -90,15 +114,28 @@ func (h *Hub) Run() {
 				case client.Send <- processedMessage:
 
 				default:
-					delete(h.Clients, client)
+					delete(h.clients, client)
 					close(client.Send)
 				}
 			}
 		case message := <-h.pause:
 			fmt.Println("pause request made")
 			message.client.paused = message.paused
+		case message := <-h.watchUser:
+			if message.watch {
+				message.client.watchedUsers[message.user] = true
+			} else {
+				delete(message.client.watchedUsers, message.user)
+			}
+		case message := <-h.watchPage:
+			if message.watch {
+				message.client.watchedPages[message.page] = true
+			} else {
+				delete(message.client.watchedPages, message.page)
+			}
+		case message := <-h.changeFilter:
+			message.client.filters = message.filters
 		}
-
 	}
 }
 
@@ -142,16 +179,18 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 	expiry, _ := c.Get("tokenExpiry")
 
 	client := &Client{
-		conn:         conn,
-		hub:          w.Hub,
-		Send:         make(chan any),
-		token:        token.(string),
-		SeenPages:    []WikiPage{},
-		paused:       false,
-		MaxEditCount: maxEditCount,
-		Wikis:        wikis,
-		WatchedUsers: map[string]bool{},
-		WatchedPages: map[WikiPage]bool{},
+		conn:      conn,
+		hub:       w.Hub,
+		Send:      make(chan any),
+		token:     token.(string),
+		SeenPages: []WikiPage{},
+		paused:    false,
+		filters: Filters{
+			MaxEditCount: maxEditCount,
+			Wikis:        wikis,
+		},
+		watchedUsers: map[string]bool{},
+		watchedPages: map[WikiPage]bool{},
 	}
 
 	client.hub.register <- client
@@ -175,6 +214,35 @@ func (h *Hub) Unpause(client *Client) {
 	h.pause <- PauseRequest{client: client, paused: false}
 }
 
+func (h *Hub) setWatchedUser(user string, client *Client, watch bool) {
+	h.watchUser <- WatchUserRequest{
+		client: client,
+		watch:  watch,
+		user:   user,
+	}
+}
+
+func (h *Hub) setWatchedPage(title string, wiki string, client *Client, watch bool) {
+	h.watchPage <- WatchPageRequest{
+		client: client,
+		watch:  watch,
+		page: WikiPage{
+			Title: title,
+			Wiki:  wiki,
+		},
+	}
+}
+
+func (h *Hub) setFilters(editcount int, wikis []string, client *Client) {
+	h.changeFilter <- FilterChangeRequest{
+		client: client,
+		filters: Filters{
+			MaxEditCount: editcount,
+			Wikis:        wikis,
+		},
+	}
+}
+
 func (h *Hub) Broadcast(msg global.WrittenUpdate) {
 	h.broadcast <- msg
 }
@@ -185,8 +253,8 @@ func ProcessData(d global.WrittenUpdate, client *Client) (bool, global.WrittenUp
 		if client.paused {
 			return false, data
 		}
-		_, userWatched := client.WatchedUsers[data.User.Username]
-		_, pageWatched := client.WatchedPages[WikiPage{
+		_, userWatched := client.watchedUsers[data.User.Username]
+		_, pageWatched := client.watchedPages[WikiPage{
 			Title: data.Title,
 			Wiki:  data.Wiki,
 		}]
@@ -194,7 +262,7 @@ func ProcessData(d global.WrittenUpdate, client *Client) (bool, global.WrittenUp
 		data.Watched = userWatched
 		data.PageWatched = pageWatched
 
-		if data.User.EditCount <= client.MaxEditCount && slices.Contains(client.Wikis, data.Wiki) {
+		if (data.User.EditCount <= client.filters.MaxEditCount && slices.Contains(client.filters.Wikis, data.Wiki)) || data.Wiki == "testwiki" {
 			client.SeenPages = append(client.SeenPages, WikiPage{
 				Title: data.Title,
 				Wiki:  data.Wiki,

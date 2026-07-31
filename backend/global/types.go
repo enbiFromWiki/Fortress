@@ -14,9 +14,9 @@ type RevUpdate struct {
 }
 
 type BlockUpdate struct {
-	Type string
-	User string
-	Wiki string
+	Type string `json:"type"`
+	User string `json:"user"`
+	Wiki string `json:"wiki"`
 }
 
 type WSUser struct {

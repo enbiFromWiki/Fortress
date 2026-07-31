@@ -11,10 +11,14 @@ import { History } from './hist';
 import {
     autoSetWatchedCurrentPage,
     autoSetWatchedCurrentUser,
+    rollAndAutoWarnCurrentEdit,
+    rollbackCurrentEdit,
 } from '../websocket/sendingfuncs';
 import { Tooltip } from './tooltip';
 import { Settings } from './settings';
 import { useSettingsStore } from '../stores/settingsstore';
+import type { KeyMap } from '../stores/authstore';
+import { getConfig, replaceDollars } from '../util/util';
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
     const decrement = useEditStore((i) => i.decrementSelection);
@@ -29,24 +33,43 @@ export function Fortress() {
                     e.target.isContentEditable)
             )
                 return;
+
             if (e.code === 'Space' || e.key === 'ArrowRight') {
                 e.preventDefault();
                 const now = performance.now();
                 increment();
                 console.log('UPDATE TIME: ', performance.now() - now);
-            }
-            if (e.key === '[') {
+            } else if (e.key === '[') {
                 decrement();
-            }
-
-            if (e.key === 'w') {
+            } else if (e.key === 'w') {
                 autoSetWatchedCurrentUser();
-            }
-            if (e.key === 'p') {
+            } else if (e.key === 'p') {
                 autoSetWatchedCurrentPage();
-            }
-            if (e.key === 'g') {
+            } else if (e.key === 'g') {
                 console.log(window.getSelection()?.toString());
+            } else {
+                const edit = useEditStore.getState().selectedEdit;
+                if (!edit) return;
+                const config = getConfig();
+                if (!config) return;
+                const wikiConfig = config[edit.wiki];
+                if (!wikiConfig) return;
+                const keyMap: KeyMap | undefined = wikiConfig.keymaps.find(
+                    (i) => i.key === e.key
+                );
+                if (!keyMap) return;
+                const summary = keyMap.overrideOuter
+                    ? keyMap.summary
+                    : replaceDollars(
+                          wikiConfig.rollbackOuterSummary,
+                          keyMap.summary,
+                          edit.user.username
+                      );
+                if (keyMap.template) {
+                    rollAndAutoWarnCurrentEdit(summary, keyMap.template);
+                } else {
+                    rollbackCurrentEdit(summary);
+                }
             }
         };
         document.addEventListener('keydown', handleKey);

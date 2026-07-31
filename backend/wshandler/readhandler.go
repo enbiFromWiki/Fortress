@@ -46,19 +46,19 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		}
 	case "watch":
 		{
-			client.WatchedUsers[data.TargetUser] = true
-			fmt.Println(client.WatchedUsers)
+			client.watchedUsers[data.TargetUser] = true
+			fmt.Println(client.watchedUsers)
 		}
 	case "unwatch":
 		{
-			delete(client.WatchedUsers, data.TargetUser)
+			delete(client.watchedUsers, data.TargetUser)
 		}
 	case "watchPage":
 		{
 			if data.TargetTitle == "" || data.TargetWikiDB == "" {
 				return
 			}
-			client.WatchedPages[WikiPage{
+			client.watchedPages[WikiPage{
 				Title: data.TargetTitle,
 				Wiki:  data.TargetWikiDB,
 			}] = true
@@ -68,7 +68,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 			if data.TargetTitle == "" || data.TargetWikiDB == "" {
 				return
 			}
-			delete(client.WatchedPages, WikiPage{
+			delete(client.watchedPages, WikiPage{
 				Title: data.TargetTitle,
 				Wiki:  data.TargetWikiDB,
 			})

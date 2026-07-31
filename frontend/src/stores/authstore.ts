@@ -8,32 +8,32 @@ import { parse } from 'yaml';
 //     details?: string;
 //     single?: boolean;
 // };
-export interface ConfigWiki {
+export type ConfigWiki = {
     warnSummary: string;
     rollbackOuterSummary: string;
     keymaps: KeyMap[];
     menuCategories: RBMenuCategory[];
-}
+};
 
-export interface KeyMap {
+export type KeyMap = {
     key: string;
     summary: string;
     template?: string;
     overrideOuter?: boolean;
-}
+};
 
-export interface RBMenuCategory {
+export type RBMenuCategory = {
     name: string;
     entries: RBMenuWarning[];
-}
+};
 
-export interface RBMenuWarning {
+export type RBMenuWarning = {
     name: string;
     template: string;
     summary: string;
     details?: string;
     single?: boolean;
-}
+};
 
 export type Warnings = Record<string, ConfigWiki>;
 

@@ -30,7 +30,7 @@ socket.subscribe((e) => {
     }
 });
 
-export async function rollbackCurrentEdit(
+export async function rollbackCurrentEditWithEnglishSummary(
     reason: string | null = null
 ): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
@@ -53,7 +53,26 @@ export async function rollbackCurrentEdit(
     return res;
 }
 
-export async function rollAndAutoWarnCurrentEdit(
+export async function rollbackCurrentEdit(
+    summary: string
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+    if (!edit) return null;
+    const obj = {
+        action: 'rollback',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+    };
+    console.log(obj);
+    watchCurrentUser();
+    const res = await sendEditRequest(obj);
+    return res;
+}
+
+export async function rollAndAutoWarnCurrentEditWithEnglishSummary(
     reason: string,
     template: string
 ): Promise<Record<string, unknown> | null> {
@@ -76,7 +95,7 @@ export async function rollAndAutoWarnCurrentEdit(
     return res;
 }
 
-export async function rollAndSingleIssueWarnCurrentEdit(
+export async function rollAndSingleIssueWarnCurrentEditWithEnglishSummary(
     reason: string,
     template: string
 ): Promise<Record<string, unknown> | null> {
@@ -84,6 +103,28 @@ export async function rollAndSingleIssueWarnCurrentEdit(
     const edit = store.selectedEdit;
     if (!edit) return null;
     const summary = `Reverting ${reason} by [[Special:Contributions/${edit.user.username}|${edit.user.username}]] (Fortress-Beta)`;
+    const obj = {
+        action: 'rollandwarn',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+        warntp: `uw-${template}`,
+        level: 'single',
+    };
+    console.log(obj);
+    watchCurrentUser();
+    const res = await sendEditRequest(obj);
+    return res;
+}
+
+export async function rollAndSingleIssueWarnCurrentEdit(
+    summary: string,
+    template: string
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+    if (!edit) return null;
     const obj = {
         action: 'rollandwarn',
         targetuser: edit.user.username,
@@ -204,4 +245,26 @@ export function autoSetWatchedCurrentPage() {
             })
         );
     }
+}
+
+export async function rollAndAutoWarnCurrentEdit(
+    summary: string,
+    template: string
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+    if (!edit) return null;
+    const obj = {
+        action: 'rollandwarn',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+        warntp: `uw-${template}`,
+        level: 'auto',
+    };
+    console.log(obj);
+    watchCurrentUser();
+    const res = await sendEditRequest(obj);
+    return res;
 }

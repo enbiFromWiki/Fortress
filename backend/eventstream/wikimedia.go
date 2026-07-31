@@ -101,7 +101,7 @@ func (w *WMStreamer) StartStream() {
 				Domain:   dataJson.Meta.Domain,
 			})
 
-			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "frwiki", "testwiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
+			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "metawiki", "testwiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
