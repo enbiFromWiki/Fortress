@@ -2,7 +2,7 @@ import { useEditStore } from '../stores/editstore';
 import { usePageStore } from '../stores/pagestore';
 import { useUserStore } from '../stores/userstore';
 import type {
-    WSResponse,
+    RecentChange,
     RevChange,
     HistEdit,
     BlockResponse,
@@ -19,7 +19,7 @@ export function startWs() {
         const addToHist = usePageStore.getState().addToHist;
         const patchUser = useUserStore.getState().patchUser;
 
-        let data: WSResponse | RevChange | BlockResponse = JSON.parse(e.data);
+        let data: RecentChange | RevChange | BlockResponse = JSON.parse(e.data);
         switch (data.type) {
             case 'revchange': {
                 data = data as RevChange;
@@ -49,7 +49,7 @@ export function startWs() {
             }
             case 'create':
                 console.log(data);
-                data = data as WSResponse;
+                data = data as RecentChange;
                 addToEditStore({ ...data, currentRevision: true, history: [] });
                 addToPageStore(data.title, data.wiki, {
                     history: data.history,
@@ -62,7 +62,7 @@ export function startWs() {
                 );
                 break;
             case 'new': {
-                data = data as WSResponse;
+                data = data as RecentChange;
                 addToEditStore({ ...data, currentRevision: true, history: [] });
                 addToPageStore(data.title, data.wiki, {
                     history: data.history,

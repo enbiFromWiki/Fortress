@@ -1,18 +1,18 @@
 import { create } from 'zustand';
-import type { WSResponse } from '../types/types';
+import type { RecentChange } from '../types/types';
 import { type WikiPage } from './pagestore';
 
 type EditStore = {
-    selectedEdit: WSResponse | null;
-    futureEdits: WSResponse[];
-    pastEdits: WSResponse[];
-    addEdit: (edit: WSResponse) => void;
+    selectedEdit: RecentChange | null;
+    futureEdits: RecentChange[];
+    pastEdits: RecentChange[];
+    addEdit: (edit: RecentChange) => void;
     incrementSelection: () => void;
     decrementSelection: () => void;
     setOldRevisions: (i: WikiPage) => void;
     clearQueue: () => void;
-    tempItem: WSResponse | null;
-    setTempItem: (i: WSResponse) => void;
+    tempItem: RecentChange | null;
+    setTempItem: (i: RecentChange) => void;
     shouldUseTemp: boolean;
     setShouldUseTemp: (i: boolean) => void;
 };
@@ -21,12 +21,12 @@ export const useEditStore = create<EditStore>((set) => ({
     futureEdits: [],
     pastEdits: [],
     selectedEdit: null,
-    addEdit: (edit: WSResponse) => {
+    addEdit: (edit: RecentChange) => {
         set((state) => {
             const isQueueEmpty =
                 state.selectedEdit === null && state.futureEdits.length === 0;
 
-            function priority(item: WSResponse): number {
+            function priority(item: RecentChange): number {
                 if (item.watched && item.pagewatched) return 3;
                 if (item.watched) return 2;
                 if (item.pagewatched) return 1;
@@ -80,7 +80,7 @@ export const useEditStore = create<EditStore>((set) => ({
 
     setOldRevisions: (page: WikiPage) => {
         set((state: EditStore) => {
-            const checkifEqual = (e: WSResponse) =>
+            const checkifEqual = (e: RecentChange) =>
                 e.title === page.title && e.wiki === page.wiki;
             const newHist = state.pastEdits.map((i) => ({
                 ...i,
@@ -112,7 +112,7 @@ export const useEditStore = create<EditStore>((set) => ({
     },
 
     tempItem: null,
-    setTempItem: (i: WSResponse) => {
+    setTempItem: (i: RecentChange) => {
         set({
             tempItem: i,
         });

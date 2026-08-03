@@ -1,4 +1,4 @@
-export type WSResponse = {
+export type RecentChange = {
     user: {
         username: string;
         userid: number;

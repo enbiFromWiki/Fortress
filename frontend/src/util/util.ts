@@ -1,6 +1,6 @@
 import { useAuthStore, type KeyMap } from '../stores/authstore';
 import { useEditStore } from '../stores/editstore';
-import type { WSResponse } from '../types/types';
+import type { RecentChange } from '../types/types';
 import {
     rollAndAutoWarnCurrentEdit,
     rollbackCurrentEdit,
@@ -56,7 +56,7 @@ export async function getAndSetNewDiff(
     newid: number,
     oldid: number,
     domain: string,
-    setTemp: (i: WSResponse) => void,
+    setTemp: (i: RecentChange) => void,
     setUseTemp: (i: boolean) => void
 ) {
     setUseTemp(true);

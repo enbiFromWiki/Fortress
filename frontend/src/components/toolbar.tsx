@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { type RBMenuCategory, type RBMenuWarning } from '../stores/authstore';
 import { handleRollbackKeyMap, replaceDollars } from '../util/util';
 import { useConfig } from '../hooks/useConfig';
-import type { WSResponse } from '../types/types';
+import type { RecentChange } from '../types/types';
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');
@@ -85,7 +85,7 @@ function RollbackMenu({
     edit,
 }: {
     setMenu: Dispatch<SetStateAction<string>>;
-    edit: WSResponse;
+    edit: RecentChange;
 }) {
     useEffect(() => {
         const handleClick = (e: PointerEvent) => {

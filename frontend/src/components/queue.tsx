@@ -1,7 +1,7 @@
 import UserSvg from '../assets/user.svg?react';
 import CommentSvg from '../assets/comment.svg?react';
 import { calculateDiffColour } from '../util/util';
-import type { WSResponse } from '../types/types';
+import type { RecentChange } from '../types/types';
 import { useEditStore } from '../stores/editstore';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -47,7 +47,7 @@ const QueueItem = memo(function QueueItem({
     obj,
     current,
 }: {
-    obj: WSResponse;
+    obj: RecentChange;
     current: boolean;
 }) {
     const { t } = useTranslation();
