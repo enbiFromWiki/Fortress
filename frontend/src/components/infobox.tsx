@@ -39,8 +39,9 @@ export function Infobox() {
             case 3:
                 color = '#fa971e';
                 break;
+            case 5:
             case 4:
-                color = '#fc5138';
+                color = '#fc2138';
                 break;
             default:
                 color = '#ddd';
@@ -125,7 +126,10 @@ export function Infobox() {
                         )}
                         className="mt-0.5 text-end text-[0.85rem] text-neutral-200"
                     >
-                        Level: {user?.level ?? edit.level}
+                        Level:{' '}
+                        {(user?.level ?? edit.level)
+                            ?.toString()
+                            ?.replace('5', '4im')}
                     </div>
                 )}
             </div>
