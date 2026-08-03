@@ -1,4 +1,4 @@
-import '../styles/fortress.css';
+import '../styles/grid.css';
 import { LeftSection } from './leftside';
 import { DiffViewer } from './diffviewer';
 import { TopBar } from './top';
