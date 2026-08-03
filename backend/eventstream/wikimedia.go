@@ -236,7 +236,7 @@ func (w *WMStreamer) handleCreateEvent(streamData *WMEventStream) {
 	comment := data.Compare.ToParsedComment
 	performer := streamData.Performer
 	sendingData := global.NewPageUpdate{
-		User: global.WSUser{
+		User: global.WebSocketUser{
 			Username:       performer.UserText,
 			Userid:         performer.UserID,
 			IsTemp:         performer.IsTemp,
@@ -345,7 +345,7 @@ func (w *WMStreamer) handleEvent(streamData *WMEventStream) {
 	comment := data.Compare.ToParsedComment
 	performer := streamData.Performer
 	sendingData := global.RecentChange{
-		User: global.WSUser{
+		User: global.WebSocketUser{
 			Username:       performer.UserText,
 			Userid:         performer.UserID,
 			IsTemp:         performer.IsTemp,

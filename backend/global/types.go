@@ -19,7 +19,7 @@ type BlockUpdate struct {
 	Wiki string `json:"wiki"`
 }
 
-type WSUser struct {
+type WebSocketUser struct {
 	Username       string    `json:"username"`
 	Userid         int       `json:"userid"`
 	IsTemp         bool      `json:"istemp"`
@@ -29,7 +29,7 @@ type WSUser struct {
 }
 
 type RecentChange struct {
-	User          WSUser         `json:"user"`
+	User          WebSocketUser  `json:"user"`
 	Title         string         `json:"title"`
 	DiffHTML      string         `json:"diffhtml"`
 	NewID         int            `json:"newid"`
@@ -86,7 +86,7 @@ type HistoryJSON struct {
 }
 
 type NewPageUpdate struct {
-	User          WSUser         `json:"user"`
+	User          WebSocketUser  `json:"user"`
 	Title         string         `json:"title"`
 	DiffHTML      string         `json:"diffhtml"`
 	NewID         int            `json:"newid"`
