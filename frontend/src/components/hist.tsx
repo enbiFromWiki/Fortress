@@ -6,7 +6,7 @@ import { usePageStore } from '../stores/pagestore';
 import { memo } from 'react';
 import { useTooltip } from '../hooks/useTooltip';
 import { useShallow } from 'zustand/shallow';
-import { getAndSetNewDiff } from '../util/util';
+import { fixAutocomments, getAndSetNewDiff } from '../util/util';
 
 export function History() {
     const { edit, setTemp, setUseTemp, shouldUseTemp } = useEditStore(
@@ -24,6 +24,11 @@ export function History() {
     console.log('history rerendered');
     if (!edit) return null;
     if (!history) return null;
+
+    if (edit.type === 'create') {
+        console.log('IMPORTANT');
+        console.log(history);
+    }
 
     return (
         <div className="hist-holder w-full h-full flex flex-col">
@@ -115,9 +120,9 @@ const HistItem = memo(function HistItem({
                 <div
                     className="truncate"
                     dangerouslySetInnerHTML={{
-                        __html: obj.parsedcomment
-                            ? obj.parsedcomment
-                            : '<span style="color:#888;font-style:italic;">No edit summary</span>',
+                        __html:
+                            fixAutocomments(obj.parsedcomment ?? '', domain) ||
+                            '<span style="color:#888;font-style:italic;">No edit summary</span>',
                     }}
                     {...tooltip}
                     data-tooltip={obj.parsedcomment}

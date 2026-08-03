@@ -1,7 +1,8 @@
 import { useEditStore } from '../stores/editstore';
 import { usePageStore } from '../stores/pagestore';
 import { useUserStore } from '../stores/userstore';
-import { getConfig } from '../util/util';
+import type { Filter } from '../types/types';
+import { getConfig, replaceDollars } from '../util/util';
 import { socket } from './websocket';
 
 const pending = new Map();
@@ -15,6 +16,16 @@ export function sendEditRequest(
     return new Promise((resolve, reject) => {
         pending.set(id, { resolve, reject });
     });
+}
+
+export async function reportToEnwikiAIV(user: string, reason: string) {
+    const res = await sendEditRequest({
+        action: 'aiv',
+        summary: `Reporting [[Special:Contributions/${user}|${user}]] (Fortress-Beta)`,
+        targetuser: user,
+        reason: reason,
+    });
+    console.log(res);
 }
 
 socket.subscribe((e) => {
@@ -121,17 +132,25 @@ export async function rollAndSingleIssueWarnCurrentEditWithEnglishSummary(
 
 export async function rollAndSingleIssueWarnCurrentEdit(
     summary: string,
-    template: string
+    template: string,
+    warnsummary: string | null = null
 ): Promise<Record<string, unknown> | null> {
-    const store = useEditStore.getState();
-    const edit = store.selectedEdit;
+    const edit = useEditStore.getState().selectedEdit;
     if (!edit) return null;
+    if (!warnsummary) {
+        warnsummary = getConfig()?.[edit.wiki]?.warnSummary ?? null;
+    }
+    if (!warnsummary) {
+        throw new Error('no config');
+    }
+    warnsummary = replaceDollars(warnsummary, edit.user.username, template);
     const obj = {
         action: 'rollandwarn',
         targetuser: edit.user.username,
         targettitle: edit.title,
         targetdomain: edit.domain,
         summary,
+        warnsummary,
         warntp: `uw-${template}`,
         level: 'single',
     };
@@ -264,6 +283,8 @@ export async function rollAndAutoWarnCurrentEdit(
     if (!warnsummary) {
         throw new Error('no config');
     }
+    warnsummary = replaceDollars(warnsummary, edit.user.username, '$1');
+    console.log('warn summary: ', warnsummary);
     const obj = {
         action: 'rollandwarn',
         targetuser: edit.user.username,
@@ -278,4 +299,9 @@ export async function rollAndAutoWarnCurrentEdit(
     watchCurrentUser();
     const res = await sendEditRequest(obj);
     return res;
+}
+
+export function changeFilters(filters: Filter) {
+    console.log('qwertyuiop');
+    socket.send(JSON.stringify({ action: 'updatefilters', filters }));
 }

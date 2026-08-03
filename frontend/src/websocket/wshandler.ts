@@ -20,7 +20,6 @@ export function startWs() {
         const patchUser = useUserStore.getState().patchUser;
 
         let data: WSResponse | RevChange | BlockResponse = JSON.parse(e.data);
-        console.log(data);
         switch (data.type) {
             case 'revchange': {
                 data = data as RevChange;
@@ -46,9 +45,22 @@ export function startWs() {
                     suppressed: false,
                 };
                 addToHist(data.page, data.wiki, historyAddition);
-                console.log(data);
                 break;
             }
+            case 'create':
+                console.log(data);
+                data = data as WSResponse;
+                addToEditStore({ ...data, currentRevision: true, history: [] });
+                addToPageStore(data.title, data.wiki, {
+                    history: data.history,
+                });
+                if (data.level !== undefined) {
+                    patchUser(data.user.username, { level: data.level });
+                }
+                console.log(
+                    usePageStore.getState().pages[`${data.title}|${data.wiki}`]
+                );
+                break;
             case 'new': {
                 data = data as WSResponse;
                 addToEditStore({ ...data, currentRevision: true, history: [] });

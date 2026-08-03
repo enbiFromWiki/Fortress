@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type MediaWikiClient struct {
@@ -18,11 +17,7 @@ type MediaWikiClient struct {
 
 func (client *MediaWikiClient) DoWithUA(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", client.UserAgent)
-	start := time.Now()
 	res, err := client.HTTPC.Do(req)
-	t := time.Now()
-	timeTaken := t.Sub(start)
-	fmt.Println(timeTaken)
 	if err != nil {
 		return nil, err
 	}

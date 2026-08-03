@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -31,8 +32,19 @@ func New(wss *wshandler.WebSocketService, mwClient *mediawiki.MediaWikiClient) *
 	}
 }
 
+var (
+	allowlistedGroups = []string{"extendedconfirmed", "sysop", "reviewer", "rollbacker", "temporary-account-viewer", "patroller", "extendedmover", "checkuser", "suppress", "interface-admin", "abusefilter-helper", "abusefilter"}
+)
+
 func (w *WMStreamer) StartStream() {
 	fmt.Println("start")
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			fmt.Println(runtime.NumGoroutine(), "goroutines active")
+		}
+	}()
 
 	for {
 		var prevItem string
@@ -45,6 +57,21 @@ func (w *WMStreamer) StartStream() {
 			}
 			prevItem = string(data)
 			json.Unmarshal(data, &dataJson)
+
+			// if dataJson.Meta.Stream == "mediawiki.recentchange" ||
+			// 	slices.ContainsFunc(dataJson.Performer.Groups, func(group string) bool {
+			// 		return slices.Contains(allowlistedGroups, group)
+			// 	}) ||
+			// 	dataJson.Performer.IsBot ||
+			// 	dataJson.Performer.IsSystem {
+			// 	return
+			// }
+			// start += 1
+
+			// fmt.Println("new edit", start)
+
+			//go FakeEvent(&dataJson)
+
 			if dataJson.Meta.Stream == "mediawiki.recentchange" {
 				if dataJson.LogType != "block" {
 					return
@@ -87,21 +114,28 @@ func (w *WMStreamer) StartStream() {
 				return
 			}
 			if dataJson.PageChangeKind != "edit" {
-				return
+				if dataJson.PageChangeKind != "create" {
+					return
+				}
+				if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "metawiki", "testwiki", "simplewiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
+					go w.handleCreateEvent(&dataJson)
+				}
 			}
 
-			w.wss.Hub.Broadcast(global.RevUpdate{
-				Type:     "revchange",
-				Page:     strings.ReplaceAll(dataJson.Page.PageTitle, "_", " "),
-				Wiki:     dataJson.WikiID,
-				Comment:  dataJson.Revision.Comment,
-				User:     dataJson.Performer.UserText,
-				Revid:    dataJson.Revision.RevID,
-				Parentid: dataJson.Revision.RevParentID,
-				Domain:   dataJson.Meta.Domain,
-			})
+			if dataJson.PageChangeKind != "create" {
+				w.wss.Hub.Broadcast(global.RevUpdate{
+					Type:     "revchange",
+					Page:     strings.ReplaceAll(dataJson.Page.PageTitle, "_", " "),
+					Wiki:     dataJson.WikiID,
+					Comment:  dataJson.Revision.Comment,
+					User:     dataJson.Performer.UserText,
+					Revid:    dataJson.Revision.RevID,
+					Parentid: dataJson.Revision.RevParentID,
+					Domain:   dataJson.Meta.Domain,
+				})
+			}
 
-			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "metawiki", "testwiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
+			if user := dataJson.Performer; ((user.EditCount < 10) && slices.Contains([]string{"enwiki", "metawiki", "testwiki", "simplewiki"}, dataJson.WikiID)) || dataJson.WikiID == "testwiki" {
 				if user.UserText == "" {
 					fmt.Println(string(msg.Data))
 					return
@@ -111,8 +145,7 @@ func (w *WMStreamer) StartStream() {
 					fmt.Println("TESTWIKI BY", user.UserText)
 				}
 
-				w.handleEvent(&dataJson)
-
+				go w.handleEvent(&dataJson)
 			}
 		})
 
@@ -122,11 +155,110 @@ func (w *WMStreamer) StartStream() {
 	}
 }
 
+func FakeEvent(data *WMEventStream) {
+	i := 2394838484433466
+	if i*234567865434543 == 0 {
+		return
+	}
+	time.Sleep(time.Second)
+}
+
 type MWCompareJSON struct {
 	Compare struct {
 		ToParsedComment string `json:"toparsedcomment"`
 		Body            string `json:"body"`
 	} `json:"compare"`
+}
+
+func (w *WMStreamer) handleCreateEvent(streamData *WMEventStream) {
+	newid := streamData.Revision.RevID
+	diffSize := streamData.Revision.RevSize
+	title := strings.ReplaceAll(streamData.Page.PageTitle, "_", " ")
+	apiPath := "https://" + streamData.Meta.Domain + "/w/api.php"
+
+	res, err := w.mwClient.Get(map[string]string{
+		"action":  "query",
+		"prop":    "revisions",
+		"titles":  streamData.Page.PageTitle,
+		"rvprop":  "ids|timestamp|flags|user|tags|parsedcomment",
+		"rvlimit": "15",
+	}, "none", apiPath)
+
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+
+	var histData global.HistoryJSON
+	json.Unmarshal(res, &histData)
+
+	history := histData.Query.Pages[0].Revisions
+	var ind bytes.Buffer
+	json.Indent(&ind, res, "", "  ")
+	fmt.Println("CREATE HIST:::::", ind.String())
+	if len(history) == 0 {
+		fmt.Println("broken hist: ", histData)
+	}
+
+	wikiID := streamData.WikiID
+	user := streamData.Performer
+	talkPage, ok, err := w.mwClient.GetSinglePageContent("User talk:"+user.UserText, streamData.Meta.Domain)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if !ok {
+		fmt.Println(title, wikiID)
+	}
+	warningLevel := mediawiki.GetWarningLevel(talkPage)
+	var data MWCompareJSON
+
+	res, err = w.mwClient.Get(map[string]string{
+		"action":                "compare",
+		"fromslots":             "main",
+		"totitle":               streamData.Page.PageTitle,
+		"fromtext-main":         "",
+		"fromsection-main":      "",
+		"fromcontentmodel-main": "wikitext",
+	}, "none", apiPath)
+
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+	err = json.Unmarshal(res, &data)
+	if err != nil {
+		fmt.Printf("error: %s", err.Error())
+		return
+	}
+
+	body := data.Compare.Body
+	comment := data.Compare.ToParsedComment
+	performer := streamData.Performer
+	sendingData := global.NewPageUpdate{
+		User: global.WSUser{
+			Username:       performer.UserText,
+			Userid:         performer.UserID,
+			IsTemp:         performer.IsTemp,
+			EditCount:      performer.EditCount,
+			UserGroups:     performer.Groups,
+			UserCreateDate: performer.RegistrationDt,
+		},
+		Title:         title,
+		DiffHTML:      body,
+		NewID:         newid,
+		Wiki:          streamData.WikiID,
+		WikiDomain:    streamData.Meta.Domain,
+		DiffSize:      diffSize,
+		ParsedComment: comment,
+		History:       history,
+		Type:          "create",
+		Watched:       false,
+		NewSize:       streamData.Revision.RevSize,
+		Level:         warningLevel,
+	}
+
+	w.wss.Hub.Broadcast(sendingData)
 }
 
 func (w *WMStreamer) handleEvent(streamData *WMEventStream) {

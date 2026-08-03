@@ -109,12 +109,12 @@ del {
 .diff-lineno {
     text-align: center;
     font-weight: bold;
-    border-bottom: 2px solid #88888844;
+    border-bottom: 1px solid #4444;
 }
 
 .mw-diff-inline-header {
     text-align: center;
     font-weight: bold;
-    border-bottom: 2px solid #88888844;
+    border-bottom: 1px solid #88888844;
     margin-bottom: 5px;
 }

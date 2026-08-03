@@ -47,7 +47,8 @@ export function locallyParseEditSummary(
             /\[\[([^|\]]+)\]\]/g,
             (_, group) =>
                 `<a href="https://${domain}/wiki/${encodeURIComponent(group.replace(/<\/?(?:ins|del)[^>]*>/g, ''))}" target="_blank" class="diff-link">${group}</a>`
-        );
+        )
+        .replace(/href="(\/wiki\/[^"]*)"/, `href="https://${domain}$1"`);
     return newContent;
 }
 
@@ -124,4 +125,16 @@ export function handleRollbackKeyMap(key: string) {
     } else {
         rollbackCurrentEdit(summary);
     }
+}
+
+export function fixAutocomments(text: string, domain: string) {
+    const dom = new DOMParser().parseFromString(text, 'text/html');
+    const links: NodeListOf<HTMLAnchorElement> =
+        dom.querySelectorAll('a[href^="/wiki"]');
+    links.forEach((link) => {
+        link.href = `https://${domain}${link.pathname}${link.hash}`;
+        link.target = '_blank';
+    });
+    const res = dom.body.innerHTML ?? '';
+    return res;
 }

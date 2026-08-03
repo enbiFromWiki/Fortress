@@ -7,7 +7,7 @@ export type WSResponse = {
         usergroups: string[];
         userage: string;
     };
-    type?: string;
+    type?: 'new' | 'create';
     title: string;
     diffhtml: string;
     newid: number;
@@ -56,4 +56,9 @@ export type RevChange = {
     user: string;
     revid: number;
     domain: string;
+};
+
+export type Filter = {
+    editcount: number;
+    wikis: string[];
 };

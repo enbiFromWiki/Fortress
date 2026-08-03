@@ -32,6 +32,19 @@ export function Fortress() {
             )
                 return;
 
+            if (e.altKey) {
+                if (e.key === 't') {
+                    const selection = window.getSelection()?.toString();
+                    if (!selection) return;
+
+                    window.open(
+                        `https://translate.google.com/?safe=active&sl=auto&text=${encodeURIComponent(selection)}&op=translate`,
+                        '_blank'
+                    );
+                }
+                return;
+            }
+
             if (e.code === 'Space' || e.key === 'ArrowRight') {
                 e.preventDefault();
                 const now = performance.now();

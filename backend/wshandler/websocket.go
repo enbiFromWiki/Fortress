@@ -14,6 +14,12 @@ import (
 	ws "github.com/gorilla/websocket"
 )
 
+const (
+	writeWait  = 10 * time.Second
+	pongWait   = 30 * time.Second
+	pingPeriod = (pongWait * 9) / 10
+)
+
 var upgrader = ws.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -26,10 +32,9 @@ type WikiPage struct {
 }
 
 type Filters struct {
-	MaxEditCount int
-	Wikis        []string
+	MaxEditCount int      `json:"editcount"`
+	Wikis        []string `json:"wikis"`
 }
-
 type Client struct {
 	conn         *ws.Conn
 	Send         chan any //struct
@@ -83,11 +88,14 @@ type WebSocketService struct {
 func New(mwclient *mediawiki.MediaWikiClient) *WebSocketService {
 	return &WebSocketService{
 		Hub: &Hub{
-			clients:    make(map[*Client]bool),
-			register:   make(chan *Client),
-			unregister: make(chan *Client),
-			broadcast:  make(chan global.WrittenUpdate),
-			pause:      make(chan PauseRequest),
+			clients:      make(map[*Client]bool),
+			register:     make(chan *Client),
+			unregister:   make(chan *Client),
+			broadcast:    make(chan global.WrittenUpdate),
+			pause:        make(chan PauseRequest),
+			watchUser:    make(chan WatchUserRequest),
+			watchPage:    make(chan WatchPageRequest),
+			changeFilter: make(chan FilterChangeRequest),
 		},
 		MWClient: mwclient,
 	}
@@ -142,26 +150,58 @@ func (h *Hub) Run() {
 func (c *Client) readPump(mwclient *mediawiki.MediaWikiClient) {
 	defer func() {
 		c.hub.unregister <- c
-		c.conn.Close()
+		_ = c.conn.Close()
 	}()
+
+	c.conn.SetReadLimit(1024)
+
+	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.conn.SetPongHandler(func(string) error {
+		c.conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
 	for {
 		_, msg, err := c.conn.ReadMessage()
 		if err != nil {
+			fmt.Printf("read error: %v\n", err)
 			break
 		}
-		fmt.Printf("received frame: %s\n", msg)
+
 		handleIncomingMessage(c, msg, mwclient)
 	}
 }
 
 func (c *Client) writePump() {
-	defer c.conn.Close()
+	ticker := time.NewTicker(pingPeriod)
 
-	for msg := range c.Send {
-		err := c.conn.WriteJSON(msg)
-		if err != nil {
-			break
+	defer func() {
+		ticker.Stop()
+		_ = c.conn.Close()
+	}()
+
+	for {
+		select {
+		case msg, ok := <-c.Send:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+
+			if !ok {
+				_ = c.conn.WriteMessage(ws.CloseMessage, []byte{})
+				return
+			}
+
+			if err := c.conn.WriteJSON(msg); err != nil {
+				fmt.Printf("write error: %v\n", err)
+				return
+			}
+
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+
+			if err := c.conn.WriteMessage(ws.PingMessage, nil); err != nil {
+				fmt.Printf("ping error: %v\n", err)
+				return
+			}
 		}
 	}
 }
@@ -181,7 +221,7 @@ func ServeWs(w *WebSocketService, c *gin.Context) {
 	client := &Client{
 		conn:      conn,
 		hub:       w.Hub,
-		Send:      make(chan any),
+		Send:      make(chan any, 256),
 		token:     token.(string),
 		SeenPages: []WikiPage{},
 		paused:    false,
@@ -270,6 +310,33 @@ func ProcessData(d global.WrittenUpdate, client *Client) (bool, global.WrittenUp
 			return true, data
 		}
 		if pageWatched || userWatched {
+			client.SeenPages = append(client.SeenPages, WikiPage{
+				Title: data.Title,
+				Wiki:  data.Wiki,
+			})
+			if length := len(client.SeenPages); length > 200 {
+				client.SeenPages = client.SeenPages[length-200:]
+			}
+			return true, data
+		}
+		return false, data
+	case global.NewPageUpdate:
+		if client.paused {
+			return false, data
+		}
+		fmt.Println(data)
+		_, userWatched := client.watchedUsers[data.User.Username]
+
+		data.Watched = userWatched
+
+		if (data.User.EditCount <= client.filters.MaxEditCount && slices.Contains(client.filters.Wikis, data.Wiki)) || data.Wiki == "testwiki" {
+			client.SeenPages = append(client.SeenPages, WikiPage{
+				Title: data.Title,
+				Wiki:  data.Wiki,
+			})
+			return true, data
+		}
+		if userWatched {
 			client.SeenPages = append(client.SeenPages, WikiPage{
 				Title: data.Title,
 				Wiki:  data.Wiki,

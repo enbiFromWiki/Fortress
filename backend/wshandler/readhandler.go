@@ -4,19 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"gateway/mediawiki"
+
+	"github.com/gin-gonic/gin"
 )
 
 type SentWSJSON struct {
-	ID           string `json:"id"`
-	Action       string `json:"action"`
-	TargetUser   string `json:"targetuser"`
-	TargetTitle  string `json:"targettitle"`
-	TargetWiki   string `json:"targetdomain"`
-	Summary      string `json:"summary"`
-	Token        string `json:"token"`
-	WarnTP       string `json:"warntp"`
-	TargetWikiDB string `json:"targetwiki"`
-	Level        string `json:"level"`
+	ID           string  `json:"id"`
+	Action       string  `json:"action"`
+	TargetUser   string  `json:"targetuser"`
+	TargetTitle  string  `json:"targettitle"`
+	TargetWiki   string  `json:"targetdomain"`
+	Summary      string  `json:"summary"`
+	Token        string  `json:"token"`
+	WarnTP       string  `json:"warntp"`
+	TargetWikiDB string  `json:"targetwiki"`
+	Level        string  `json:"level"`
+	WarnSummary  string  `json:"warnsummary"`
+	Filters      Filters `json:"filters"`
+	Reason       string  `json:"reason"`
 }
 
 type RollbackTokenJSON struct {
@@ -188,9 +193,9 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 			var result mediawiki.WarnResult
 			switch level {
 			case "", "auto":
-				result, err = mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
+				result, err = mwclient.AutoWarnUser(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle, data.WarnSummary)
 			case "single":
-				result, err = mwclient.SingleIssueWarn(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle)
+				result, err = mwclient.SingleIssueWarn(data.TargetUser, data.WarnTP, client.token, data.TargetWiki, data.TargetTitle, data.WarnSummary)
 			}
 			if err != nil {
 				client.Send <- map[string]any{
@@ -221,5 +226,37 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 			}
 
 		}
+	case "updatefilters":
+		fmt.Println("Filters updated")
+		client.hub.changeFilter <- FilterChangeRequest{
+			client:  client,
+			filters: data.Filters,
+		}
+		fmt.Println("new filters:", client.filters)
+	case "aiv":
+		if data.TargetUser == "" || data.Reason == "" || data.Summary == "" || data.ID == "" {
+			return
+		}
+		reported, err := mwclient.ReportToTestwikiAIV(data.TargetUser, data.Reason, data.Summary, client.token)
+		if err != nil {
+			client.Send <- gin.H{
+				"status": "error",
+				"id":     data.ID,
+				"error":  err.Error(),
+			}
+			return
+		}
+		if !reported {
+			client.Send <- gin.H{
+				"status": "alreadygone",
+				"id":     data.ID,
+			}
+			return
+		}
+		client.Send <- gin.H{
+			"status": "success",
+			"id":     data.ID,
+		}
 	}
+
 }

@@ -81,10 +81,7 @@ const QueueItem = memo(function QueueItem({
                 <div className="flex items-center">
                     <UserSvg className="w-3.5 h-3.5 **:fill-neutral-400 mr-1.5" />
                     <a
-                        href={
-                            'https://meta.wikimedia.org/wiki/Special:CA/' +
-                            encodeURIComponent(obj.user.username)
-                        }
+                        href={`https://${obj.domain}/wiki/Special:Contributions/${encodeURIComponent(obj.user.username)}`}
                         className={`text-neutral-300 truncate ${obj.watched ? 'font-bold text-[#ff0353]!' : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"

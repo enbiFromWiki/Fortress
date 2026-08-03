@@ -30,5 +30,6 @@
     "scrollbar-caption": "Hide all scrollbars",
     "ui": "UI",
     "ws-pause": "Pause",
-    "ws-unpause": "Unpause"
+    "ws-unpause": "Unpause",
+    "bad-config": "Fortress's YAML configuration file appears to be broken. <br /> If this issue persists, please raise the issue at <0>the config page's talk page</0>."
 }

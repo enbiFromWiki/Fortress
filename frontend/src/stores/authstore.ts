@@ -55,6 +55,8 @@ type AuthStore = {
     loadUser: () => Promise<void>;
 };
 
+export class BadConfigError extends Error {}
+
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
     loading: true,
@@ -123,37 +125,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
         });
     },
     async loadConfig() {
-        try {
-            const res = await fetch(
-                'https://test.wikipedia.org/w/api.php?action=parse&page=User:enbi/Fortress/config.yaml.js&prop=wikitext&format=json&origin=*&formatversion=2'
-            );
-            const data = await res.json();
-            const text = data?.parse?.wikitext;
-            if (!text) {
-                set({
-                    status: 'error',
-                });
-                console.log(data);
-                return;
-            }
-            if (text.startsWith('<')) {
-                console.log(data);
-                // wikimedia returns HTML on an action=raw 404
-                set({
-                    status: 'error',
-                });
-                return;
-            }
-            const config = parse(text);
-            console.log('Config: ', config);
-            set({
-                config: config,
-            });
-        } catch (e) {
-            set({
-                status: 'error',
-            });
-            console.error(e);
+        const res = await fetch(
+            'https://test.wikipedia.org/w/api.php?action=parse&page=User:enbi/fortress.yaml&prop=wikitext&format=json&origin=*&formatversion=2'
+        );
+        const data = await res.json();
+        const text: string | undefined = data?.parse?.wikitext?.match(
+            /<syntaxhighlight lang="yaml">(.*?)<\/syntaxhighlight>/s
+        )?.[1];
+        console.log('text:', text);
+        if (!text) {
+            throw new BadConfigError();
         }
+        const config = parse(text);
+        console.log('Config: ', config);
+        set({
+            config: config,
+        });
     },
 }));

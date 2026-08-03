@@ -58,6 +58,10 @@ func (w BlockUpdate) GetType() string {
 	return w.Type
 }
 
+func (w NewPageUpdate) GetType() string {
+	return w.Type
+}
+
 type HistoryEdit struct {
 	Revid         int       `json:"revid"`
 	Parentid      int       `json:"parentid"`
@@ -79,4 +83,21 @@ type HistoryJSON struct {
 			Revisions []*HistoryEdit `json:"revisions"`
 		} `json:"pages"`
 	} `json:"query"`
+}
+
+type NewPageUpdate struct {
+	User          WSUser         `json:"user"`
+	Title         string         `json:"title"`
+	DiffHTML      string         `json:"diffhtml"`
+	NewID         int            `json:"newid"`
+	Wiki          string         `json:"wiki"`
+	WikiDomain    string         `json:"domain"`
+	DiffSize      int            `json:"diffsize"`
+	ParsedComment string         `json:"parsedcomment"`
+	History       []*HistoryEdit `json:"history"`
+	Type          string         `json:"type"`
+	Watched       bool           `json:"watched"`
+	PageWatched   bool           `json:"pagewatched"`
+	NewSize       int            `json:"newsize"`
+	Level         int            `json:"level"`
 }

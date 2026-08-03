@@ -6,10 +6,10 @@ import {
     type ReactNode,
 } from 'react';
 import { useSettingsStore, type Settings } from '../stores/settingsstore';
-import { socket } from '../websocket/websocket';
 import { useTooltip } from '../hooks/useTooltip';
 import '../styles/toggle.css';
 import { useTranslation } from 'react-i18next';
+import { changeFilters } from '../websocket/sendingfuncs';
 
 export function Settings() {
     const setOpen = useSettingsStore((i) => i.setSettingsOpen);
@@ -26,7 +26,10 @@ export function Settings() {
         if (
             !WS_RESTART_TRIGGERS.every((i) => settings[i] === globalSettings[i])
         ) {
-            socket.reconnect(Number(settings.maxEditCount), settings.wikis);
+            changeFilters({
+                editcount: Number(settings.maxEditCount),
+                wikis: settings.wikis,
+            });
         }
     }
     if (!open) return null;

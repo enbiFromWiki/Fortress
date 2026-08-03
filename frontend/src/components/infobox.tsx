@@ -65,6 +65,15 @@ export function Infobox() {
                         >
                             {edit.title}
                         </a>
+                        {edit.type === 'create' && (
+                            <div
+                                {...tooltip}
+                                data-tooltip="New page creation"
+                                className="h-full ml-3 center cursor-default font-mono font-bold"
+                            >
+                                N
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center pb-0.75">
@@ -103,9 +112,12 @@ export function Infobox() {
                 >
                     {edit.diffsize > 0 ? `+${edit.diffsize}` : edit.diffsize}
                 </div>
-                <div className="text-[0.8rem] text-neutral-400 text-end">
-                    {`${sizePercentage > 0 ? `+${sizePercentage}` : sizePercentage === 0 && edit.diffsize !== 0 ? `~${sizePercentage}` : sizePercentage}%`}
-                </div>
+
+                {!Number.isNaN(sizePercentage) && (
+                    <div className="text-[0.8rem] text-neutral-400 text-end">
+                        {`${sizePercentage > 0 ? `+${sizePercentage}` : sizePercentage === 0 && edit.diffsize !== 0 ? `~${sizePercentage}` : sizePercentage}%`}
+                    </div>
+                )}
                 {(edit.level !== undefined || user?.level !== undefined) && (
                     <div
                         style={calculateWarningLevelColour(

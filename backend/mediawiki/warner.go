@@ -78,7 +78,7 @@ func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string,
 
 	if warningLevel > 4 {
 		if wiki == "en.wikipedia.org" {
-			ok, err := c.ReportToEnwikiAIV(user, "Vandalism past final warning", tok)
+			ok, err := c.ReportToEnwikiAIV(user, "Vandalism past final warning", "Reporting [[Special:Contributions/"+user+"|"+user+"]] (Fortress-Beta)", tok)
 			if err != nil {
 				return Failed, err
 			}
