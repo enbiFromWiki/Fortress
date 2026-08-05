@@ -10,6 +10,7 @@ import { parse } from 'yaml';
 // };
 export type ConfigWiki = {
     warnSummary: string;
+    reportSummary?: string;
     rollbackOuterSummary: string;
     keymaps: KeyMap[];
     menuCategories: RBMenuCategory[];

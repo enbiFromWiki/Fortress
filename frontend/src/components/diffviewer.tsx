@@ -3,7 +3,6 @@ import '../styles/diff.css';
 import { useEditStore } from '../stores/editstore';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore } from '../stores/settingsstore';
-import { Toolbar } from './toolbar';
 import { useTranslation } from 'react-i18next';
 
 export function DiffViewer() {
@@ -66,7 +65,6 @@ export function DiffViewer() {
                 <p className="mt-[30vh] text-neutral-400">
                     {t('no-difference')}
                 </p>
-                <Toolbar />
             </div>
         );
     }
@@ -77,7 +75,6 @@ export function DiffViewer() {
                 <p className="mt-[30vh] text-neutral-400">
                     {t('loading-elipsis')}
                 </p>
-                <Toolbar />
             </div>
         );
     }
@@ -88,7 +85,6 @@ export function DiffViewer() {
                 <p className="mt-[30vh] text-neutral-400">
                     {t('waiting-for-edit')}
                 </p>
-                <Toolbar />
             </div>
         );
     }
@@ -113,7 +109,6 @@ export function DiffViewer() {
                     ></tbody>
                 </table>
             </div>
-            <Toolbar />
         </div>
     );
 }

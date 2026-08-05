@@ -19,9 +19,12 @@ export function sendEditRequest(
 }
 
 export async function reportToEnwikiAIV(user: string, reason: string) {
+    const summary =
+        getConfig()?.['testwiki']?.reportSummary ??
+        'Reporting [[Special:Contributions/$1|$1]] (Fortress-Beta)';
     const res = await sendEditRequest({
         action: 'aiv',
-        summary: `Reporting [[Special:Contributions/${user}|${user}]] (Fortress-Beta)`,
+        summary: replaceDollars(summary, user),
         targetuser: user,
         reason: reason,
     });

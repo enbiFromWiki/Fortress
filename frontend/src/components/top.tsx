@@ -32,35 +32,39 @@ export function TopBar() {
     const user = useAuthStore((i) => i.user);
 
     return (
-        <div className=" flex items-center px-1 h-full justify-end">
-            {user && (
+        <div className="flex items-center px-1 h-full justify-between">
+            <div className="flex">
                 <div
-                    onClick={rollback}
-                    className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md"
+                    onClick={() => setOpen(true)}
+                    className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
                 >
-                    {user}
+                    <SettingsSvg className="w-6 h-6" />
                 </div>
-            )}
-            <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition py-1 px-2 rounded-md">
-                {t('edit')}
+                <div
+                    {...tooltip}
+                    data-tooltip="Remove all edits from queue"
+                    onClick={clearQueue}
+                    className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
+                >
+                    <Delete className="w-6 h-6" />
+                </div>
             </div>
-            <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
-                {t('user')}
+            <div className="flex">
+                {user && (
+                    <div
+                        onClick={rollback}
+                        className="text-[0.9rem] max-w-33 truncate text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md"
+                    >
+                        {user}
+                    </div>
+                )}
+                <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition py-1 px-2 rounded-md">
+                    {t('edit')}
+                </div>
+                <div className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-2 py-1 rounded-md">
+                    {t('user')}
+                </div>
             </div>
-            <div
-                onClick={() => setOpen(true)}
-                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
-            >
-                <SettingsSvg className="w-6 h-6" />
-            </div>{' '}
-            <div
-                {...tooltip}
-                data-tooltip="Remove all edits from queue"
-                onClick={clearQueue}
-                className="text-[0.9rem] text-neutral-300 hover:bg-neutral-800 transition px-1 py-0.75 rounded-md"
-            >
-                <Delete className="w-6 h-6" />
-            </div>{' '}
         </div>
     );
 }

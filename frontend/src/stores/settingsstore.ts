@@ -8,11 +8,11 @@ type SettingsStore = {
 };
 
 export type Settings = {
-    maxEditCount: string;
-    wikis: string[];
-    diffLinks: boolean;
-    scrollbars: boolean | undefined;
-    moveAfterRollback: boolean;
+    maxEditCount?: string;
+    wikis?: string[];
+    diffLinks?: boolean;
+    scrollbars?: boolean | undefined;
+    moveAfterRollback?: boolean;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
