@@ -108,6 +108,10 @@ func (a *AuthService) Me(c *gin.Context) {
 
 	fmt.Println("written?", c.Writer.Written())
 
+	if name == "Enbi" {
+		name = "enbi" // narcissism
+	}
+
 	c.JSON(200, gin.H{
 		"status":        "success",
 		"user":          name,
