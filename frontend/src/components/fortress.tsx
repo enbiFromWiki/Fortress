@@ -8,6 +8,8 @@ import { useEditStore } from '../stores/editstore';
 import { Bottom } from './bottom';
 import { Infobox } from './infobox';
 import { History } from './hist';
+import { Toolbar } from './toolbar';
+
 import {
     autoSetWatchedCurrentPage,
     autoSetWatchedCurrentUser,
@@ -90,6 +92,7 @@ export function Fortress() {
             </div>
             <Tooltip />
             <Settings />
+            <Toolbar />
         </div>
     );
 }

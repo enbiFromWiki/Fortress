@@ -17,6 +17,7 @@ import { type RBMenuCategory, type RBMenuWarning } from '../stores/authstore';
 import { handleRollbackKeyMap, replaceDollars } from '../util/util';
 import { useConfig } from '../hooks/useConfig';
 import type { RecentChange } from '../types/types';
+import { MoreActionsMenu } from './moreActions';
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');
@@ -30,16 +31,19 @@ export function Toolbar() {
     if (!edit) return null;
 
     function handleClick() {
+        if (edit?.type === 'create') return;
         setMenu((i) => (i === 'rollback' ? '' : 'rollback'));
     }
     return (
-        <div className="left-[calc(2.8em+35vw)] right-[35vw] shadow-2xl border border-neutral-800 bottom-10 rounded-xl h-18 flex items-center bg-neutral-900 fixed p-1 gap-1">
-            <div className="relative z-auto h-full w-18">
+        <div className="z-10 **:z-10 left-[calc(2.8em+35vw)] right-[35vw] shadow-2xl border border-neutral-800 bottom-10 rounded-xl h-18 flex items-center bg-neutral-900 fixed p-1 gap-1">
+            <div className="relative  h-full w-18">
                 <button
                     onClick={handleClick}
-                    className="hover:bg-[#222] w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
+                    className={`${edit.type !== 'create' ? 'hover:bg-[#222] cursor-pointer' : ''} w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] ${edit.type === 'create' ? 'text-neutral-500' : 'text-neutral-300'}`}
                 >
-                    <RevertSvg className="w-6 h-6" />
+                    <RevertSvg
+                        className={`w-6 h-6 transition ${edit.type === 'create' ? '**:[[stroke-linecap="round"]]:stroke-neutral-500' : ''}`}
+                    />
                     <div className="text-[0.8rem] center leading-[1.2] text-center">
                         <Trans i18nKey="roll-and-warn" />
                     </div>
@@ -48,10 +52,9 @@ export function Toolbar() {
                     <RollbackMenu edit={edit} setMenu={setMenu} />
                 )}
             </div>
-            <div className="relative z-auto h-full w-18">
+            <div className="relative  h-full w-18">
                 <button
                     onClick={() => {
-                        console.log('i');
                         setWatchedCurrentUser(!isWatched);
                     }}
                     className="hover:bg-[#222] w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
@@ -62,19 +65,21 @@ export function Toolbar() {
                     </div>
                 </button>
             </div>
-            <div className="relative z-auto h-full ml-auto w-18">
+            <div className="relative ma-menu  h-full ml-auto w-18">
                 <button
                     onClick={() => {
-                        console.log('i');
-                        setWatchedCurrentUser(!isWatched);
+                        setMenu((s) => (s === 'actions' ? '' : 'actions'));
                     }}
-                    className="hover:bg-[#222] w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
+                    className="hover:bg-[#222] ma-menu w-full rb-menu flex flex-col justify-center items-center transition p-1 h-full rounded-[10.482px] text-neutral-300"
                 >
                     <DotsSvg className="w-7 h-7" />
                     <div className="text-[0.8rem] leading-[1.2] text-center">
                         More actions
                     </div>
                 </button>
+                {menu === 'actions' && (
+                    <MoreActionsMenu setMenu={setMenu} edit={edit} />
+                )}
             </div>
         </div>
     );
@@ -91,7 +96,7 @@ function RollbackMenu({
         const handleClick = (e: PointerEvent) => {
             if (!(e.target instanceof Element)) return;
 
-            if (e.target.closest('.rb-menu')) return;
+            if (e.target.closest('.rb-menu, .ma-menu')) return;
             console.log('resetting menu');
             setMenu('');
         };
@@ -106,13 +111,12 @@ function RollbackMenu({
     const { t } = useTranslation();
     const config = useConfig();
     const wikiConfig = config?.[wiki];
-    if (!wikiConfig) return null;
     const outerSummary = replaceDollars(
-        wikiConfig.rollbackOuterSummary,
+        wikiConfig?.rollbackOuterSummary ?? '',
         '$1',
         edit.user.username
     );
-    const cats = wikiConfig.menuCategories;
+    const cats = wikiConfig?.menuCategories ?? [];
     return (
         <div
             onClick={(e) => e.stopPropagation()}

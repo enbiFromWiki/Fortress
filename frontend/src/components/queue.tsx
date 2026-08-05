@@ -64,7 +64,7 @@ const QueueItem = memo(function QueueItem({
             onClick={handleClick}
             className={`text-[0.85rem] not-last:after:w-[90%] not-last:after:h-[0.5px] not-last:after:bottom-0 not-last:after:left-0 not-last:after:translate-x-[5%] not-last:after:translate-y-2 not-last:after:bg-neutral-700 not-last:after:block relative ${current ? 'after:translate-x-[calc(5%-4px)] border-l-4 border-l-[#ff0353]' : ''} p-2 [&_a]:text-white [&_a:hover]:text-white hover:bg-neutral-800 transition`}
         >
-            <div className="flex align-center justify-between px-1">
+            <div className="w-full min-w-0 flex align-center justify-between pl-1">
                 <a
                     href={wikiPath + encodeURIComponent(obj.title)}
                     className={`truncate ${obj.pagewatched ? 'text-pink font-bold' : ''}`}
@@ -77,12 +77,12 @@ const QueueItem = memo(function QueueItem({
                 <div className="text-neutral-400 text-end">{obj.wiki}</div>
             </div>
             <div></div>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                    <UserSvg className="w-3.5 h-3.5 **:fill-neutral-400 mr-1.5" />
+            <div className="min-w-0 w-full flex items-center justify-between">
+                <div className="flex flex-1 items-center min-w-0">
+                    <UserSvg className="shrink-0 w-3.5 h-3.5 **:fill-neutral-400 mr-1.5" />
                     <a
                         href={`https://${obj.domain}/wiki/Special:Contributions/${encodeURIComponent(obj.user.username)}`}
-                        className={`text-neutral-300 truncate ${obj.watched ? 'font-bold text-[#ff0353]!' : ''}`}
+                        className={`text-neutral-300 min-w-0 truncate ${obj.watched ? 'font-bold text-[#ff0353]!' : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -91,7 +91,7 @@ const QueueItem = memo(function QueueItem({
                 </div>
                 <div
                     style={calculateDiffColour(obj.diffsize)}
-                    className="font-mono text-end"
+                    className="font-mono text-end min-w-0"
                 >
                     {obj.diffsize > 0 ? `+${obj.diffsize}` : obj.diffsize}
                 </div>

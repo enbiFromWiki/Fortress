@@ -1,5 +1,7 @@
 import {
     useState,
+    type DetailedHTMLProps,
+    type InputHTMLAttributes,
     type KeyboardEvent,
     type MouseEvent,
     type MouseEventHandler,
@@ -75,9 +77,8 @@ export function Settings() {
                             <div className="text-[0.8rem] text-neutral-400">
                                 {t('edit-count-limit-caption')}
                             </div>
-                            <input
+                            <SettingsInput
                                 type="number"
-                                className="p-1 border border-neutral-800 rounded-lg transition duration-75 text-neutral-200 outline-[#0000] outline-2 focus:outline-[#ff0353]"
                                 name="editcount"
                                 id="ec"
                                 value={settings.maxEditCount}
@@ -97,10 +98,9 @@ export function Settings() {
                             <div className="text-[0.8rem] text-neutral-400">
                                 {t('wikis-settings-caption')}
                             </div>
-                            <input
+                            <SettingsInput
                                 placeholder="e.g. enwiki"
                                 type="text"
-                                className="p-1 border border-neutral-800 rounded-md transition duration-75 text-neutral-200 text-sm outline-[#0000] outline-2 focus:outline-[#ff0353]"
                                 name="editcount"
                                 id="ec"
                                 value={wikiInput}
@@ -153,6 +153,16 @@ export function Settings() {
                                 active={!settings.scrollbars}
                                 label={t('scrollbar-caption')}
                             />
+                            <Toggle
+                                onClick={() => {
+                                    setSettings((s) => ({
+                                        ...s,
+                                        moveAfterRollback: !s.moveAfterRollback,
+                                    }));
+                                }}
+                                active={settings.moveAfterRollback}
+                                label={t('move-after-rollback')}
+                            />
                         </div>
                     </div>
                 </div>
@@ -182,12 +192,30 @@ function Toggle({
                 <div className="toggle-circle"></div>
             </div>
             <div
-                className="toggle-label center text-sm text-neutral-200"
+                className="toggle-label center text-sm text-[#b7b7b7]"
                 data-tooltip={tooltipText}
                 {...(tooltipText ? tooltip : {})}
             >
                 {label}
             </div>
         </div>
+    );
+}
+
+function SettingsInput(
+    props: DetailedHTMLProps<
+        InputHTMLAttributes<HTMLInputElement>,
+        HTMLInputElement
+    >
+) {
+    return (
+        <input
+            {...{
+                ...props,
+                className:
+                    props.className +
+                    ' px-1 py-1.25 border border-neutral-800 rounded-md transition duration-75 text-neutral-200 text-sm outline-[#0000] outline-2 focus:outline-[#ff0353]',
+            }}
+        />
     );
 }

@@ -31,5 +31,7 @@
     "ui": "UI",
     "ws-pause": "Pause",
     "ws-unpause": "Unpause",
-    "bad-config": "Fortress's YAML configuration file appears to be broken. <br /> If this issue persists, please raise the issue at <0>the config page's talk page</0>."
+    "bad-config": "Fortress's YAML configuration file appears to be broken. <br /> If this issue persists, please raise the issue at <0>the config page's talk page</0>.",
+    "move-after-rollback": "Move to next edit after reverting",
+    "report-to-aiv": "Report to AIV"
 }

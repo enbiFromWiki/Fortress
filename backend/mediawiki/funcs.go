@@ -105,6 +105,37 @@ Retry:
 	return true, nil
 }
 
+type PageSection struct {
+	Level string
+	Name  string
+}
+
+func (c *MediaWikiClient) ArbitraryReport(structure string, title string, summary string, preReportRegex string, domain string, tok string) (bool, error) {
+Retry:
+	regex := regexp.MustCompile(preReportRegex)
+	content, exists, err := c.GetSinglePageContent(title, domain)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, nil
+	}
+
+	if regex.MatchString(content) {
+		return false, nil
+	}
+	err = c.Edit(title, domain, tok, structure, summary, true, false)
+	if err != nil {
+		if err.Error() == "editconflict" {
+			goto Retry
+		} else {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
 func (c *MediaWikiClient) ReportToTestwikiAIV(user string, reason string, summary string, tok string) (bool, error) {
 Retry:
 	aivPage := "Wikipedia:Administrator intervention against vandalism"

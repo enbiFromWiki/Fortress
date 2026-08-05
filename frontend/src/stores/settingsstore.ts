@@ -12,6 +12,7 @@ export type Settings = {
     wikis: string[];
     diffLinks: boolean;
     scrollbars: boolean | undefined;
+    moveAfterRollback: boolean;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
@@ -27,6 +28,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
         wikis: ['enwiki'],
         diffLinks: true,
         scrollbars: false,
+        moveAfterRollback: true,
     },
 
     setSettings: (i) => {
