@@ -237,9 +237,11 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		if data.TargetUser == "" || data.Reason == "" || data.Summary == "" || data.ID == "" {
 			return
 		}
+		fmt.Println("AIV REPORT")
 		reported, err := mwclient.ReportToTestwikiAIV(data.TargetUser, data.Reason, data.Summary, client.token)
 		if err != nil {
 			client.Send <- gin.H{
+				"type":   "response",
 				"status": "error",
 				"id":     data.ID,
 				"error":  err.Error(),
@@ -248,12 +250,14 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 		}
 		if !reported {
 			client.Send <- gin.H{
+				"type":   "response",
 				"status": "alreadygone",
 				"id":     data.ID,
 			}
 			return
 		}
 		client.Send <- gin.H{
+			"type":   "response",
 			"status": "success",
 			"id":     data.ID,
 		}

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+@theme {
+    --color-hotpink: #ff0353;
+}
+
 @layer base {
     body {
         font-family: Inter, sans-serif;

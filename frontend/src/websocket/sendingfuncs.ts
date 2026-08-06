@@ -1,5 +1,6 @@
 import { useEditStore } from '../stores/editstore';
 import { usePageStore } from '../stores/pagestore';
+import { useToastStore } from '../stores/toaststore';
 import { useUserStore } from '../stores/userstore';
 import type { Filter } from '../types/types';
 import { getConfig, replaceDollars } from '../util/util';
@@ -18,6 +19,40 @@ export function sendEditRequest(
     });
 }
 
+export async function rollbackAndAutoWarnCurrentEdit(
+    summary: string,
+    template: string,
+    warnsummary: string | null = null
+): Promise<Record<string, unknown> | null> {
+    const store = useEditStore.getState();
+    const edit = store.selectedEdit;
+
+    if (!edit) return null;
+
+    if (!warnsummary) {
+        warnsummary = getConfig()?.[edit.wiki]?.warnSummary ?? null;
+    }
+    if (!warnsummary) {
+        throw new Error('no config');
+    }
+    warnsummary = replaceDollars(warnsummary, edit.user.username, '$1');
+    console.log('warn summary: ', warnsummary);
+    const obj = {
+        action: 'rollandwarn',
+        targetuser: edit.user.username,
+        targettitle: edit.title,
+        targetdomain: edit.domain,
+        summary,
+        warnsummary,
+        warntp: `uw-${template}`,
+        level: 'auto',
+    };
+    console.log(obj);
+    watchCurrentUser();
+    const res = await sendEditRequest(obj);
+    return res;
+}
+
 export async function reportToEnwikiAIV(user: string, reason: string) {
     const summary =
         getConfig()?.['testwiki']?.reportSummary ??
@@ -29,12 +64,57 @@ export async function reportToEnwikiAIV(user: string, reason: string) {
         reason: reason,
     });
     console.log(res);
+    return res;
+}
+
+export async function reportToEnwikiAIVWithToast(user: string, reason: string) {
+    const id = crypto.randomUUID();
+    const { addToast, updateToast, deleteToast } = useToastStore.getState();
+    addToast({
+        header: 'Reporting...',
+        body: `Reporting ${user} to AIV.`,
+        progress: 100 / 3,
+        status: 'normal',
+        id,
+    });
+    try {
+        await reportToEnwikiAIV(user, reason);
+        updateToast(id, {
+            header: 'Reported!',
+            body: `${user} successfully reported to AIV.`,
+            progress: 100,
+            status: 'done',
+        });
+    } catch (err) {
+        const e = err as Record<string, unknown>;
+        if (e.status === 'alreadygone') {
+            updateToast(id, {
+                header: 'Failed to report',
+                body: `${user} is already reported to AIV.`,
+                progress: 0,
+            });
+        } else {
+            updateToast(id, {
+                header: 'Failed to report',
+                body:
+                    e.error === 'http'
+                        ? 'Please report to the development team.'
+                        : e.error === 'editconflict'
+                          ? "Your edit conflicted with another editor's."
+                          : `Error code: ${e.error}`,
+                status: 'error',
+                progress: 100,
+            });
+        }
+    } finally {
+        setInterval(() => deleteToast(id), 4000);
+    }
 }
 
 socket.subscribe((e) => {
     const ms = JSON.parse(e.data);
     if (ms.type !== 'response') return;
-
+    console.log(ms);
     const req = pending.get(ms.id);
     if (!req) return;
     pending.delete(ms.id);
@@ -66,6 +146,48 @@ export async function rollbackCurrentEditWithEnglishSummary(
     watchCurrentUser();
     const res = await sendEditRequest(obj);
     return res;
+}
+
+export async function rollbackAndToastCurrentEdit(summary: string) {
+    const id = crypto.randomUUID();
+    const { addToast, updateToast, deleteToast } = useToastStore.getState();
+    addToast({
+        header: 'Reverting...',
+        body: 'Reverting edits without warning the user.',
+        progress: 100 / 3,
+        status: 'normal',
+        id,
+    });
+    try {
+        await rollbackCurrentEdit(summary);
+        updateToast(id, {
+            header: 'Reverted!',
+            body: 'Edits successfully reverted.',
+            progress: 100,
+            status: 'done',
+        });
+    } catch (err) {
+        const e = err as Record<string, unknown>;
+        updateToast(id, {
+            header: 'Failed to revert',
+            body:
+                e.error === 'alreadyrolled'
+                    ? 'This edit is not the current revision.'
+                    : e.error === 'editconflict'
+                      ? "Your edit conflicted with another editor's."
+                      : e.error === 'rollback-nochange'
+                        ? 'If you rolled back, the result would be the same as the current revision.'
+                        : e.error === 'onlyauthor'
+                          ? 'The user being reverted is the only person to ever edit the page.'
+                          : e.error === 'http'
+                            ? 'Please contact the developers.'
+                            : `Error code: ${e.error}`,
+            status: 'error',
+            progress: 100,
+        });
+    } finally {
+        setInterval(() => deleteToast(id), 4000);
+    }
 }
 
 export async function rollbackCurrentEdit(

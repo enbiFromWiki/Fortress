@@ -18,6 +18,7 @@ import { useSettingsStore } from '../stores/settingsstore';
 import { handleRollbackKeyMap } from '../util/util';
 import { Tooltip } from './tooltip';
 import { Settings } from './settings';
+import { Toast } from './toast';
 
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
@@ -55,6 +56,7 @@ export function Fortress() {
             } else if (e.key === '[') {
                 decrement();
             } else if (e.key === 'w') {
+                console.log('watching');
                 autoSetWatchedCurrentUser();
             } else if (e.key === 'p') {
                 autoSetWatchedCurrentPage();
@@ -93,6 +95,7 @@ export function Fortress() {
             <Tooltip />
             <Settings />
             <Toolbar />
+            <Toast />
         </div>
     );
 }

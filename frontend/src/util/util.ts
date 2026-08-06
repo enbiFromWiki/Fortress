@@ -3,7 +3,7 @@ import { useEditStore } from '../stores/editstore';
 import type { RecentChange } from '../types/types';
 import {
     rollAndAutoWarnCurrentEdit,
-    rollbackCurrentEdit,
+    rollbackAndToastCurrentEdit,
 } from '../websocket/sendingfuncs';
 
 export async function fetchCred(
@@ -123,7 +123,7 @@ export function handleRollbackKeyMap(key: string) {
     if (keyMap.template) {
         rollAndAutoWarnCurrentEdit(summary, keyMap.template);
     } else {
-        rollbackCurrentEdit(summary);
+        rollbackAndToastCurrentEdit(summary);
     }
 }
 
