@@ -183,7 +183,9 @@ export async function rollbackAndToastCurrentEdit(summary: string) {
                             ? 'Please contact the developers.'
                             : e.error === 'permissiondenied'
                               ? 'Either you lost rollback rights mid-patrol, or you should contact the developers.'
-                              : `Error code: ${e.error}`,
+                              : e.error === 'missingtitle'
+                                ? 'The page got deleted before you reverted.'
+                                : `Error code: ${e.error}`,
 
             status: 'error',
             progress: 100,
