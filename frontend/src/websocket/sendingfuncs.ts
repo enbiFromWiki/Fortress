@@ -181,7 +181,10 @@ export async function rollbackAndToastCurrentEdit(summary: string) {
                           ? 'The user being reverted is the only person to ever edit the page.'
                           : e.error === 'http'
                             ? 'Please contact the developers.'
-                            : `Error code: ${e.error}`,
+                            : e.error === 'permissiondenied'
+                              ? 'Either you lost rollback rights mid-patrol, or you should contact the developers.'
+                              : `Error code: ${e.error}`,
+
             status: 'error',
             progress: 100,
         });
