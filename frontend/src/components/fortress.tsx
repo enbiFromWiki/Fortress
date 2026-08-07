@@ -19,7 +19,7 @@ import { handleRollbackKeyMap } from '../util/util';
 import { Tooltip } from './Tooltip';
 import { Settings } from './settings';
 import { Toast } from './toast';
-import { rollAndManualWarnCurrentEdit } from '../websocket/editService/rollAndWarn';
+import { rollAndAutoWarnCurrentEdit } from '../websocket/editService/rollAndWarn';
 
 export function Fortress() {
     const increment = useEditStore((i) => i.incrementSelection);
@@ -64,7 +64,7 @@ export function Fortress() {
             } else if (e.key === 'g') {
                 console.log(window.getSelection()?.toString());
             } else if (e.key === '1') {
-                rollAndManualWarnCurrentEdit('uw-vandalism3', 'test', 'test2');
+                rollAndAutoWarnCurrentEdit('vandalism', 'test', 'test2');
             } else {
                 handleRollbackKeyMap(e.key);
             }

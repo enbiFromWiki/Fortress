@@ -14,6 +14,7 @@ export type ConfigWiki = {
     rollbackOuterSummary: string;
     keymaps: KeyMap[];
     menuCategories: RBMenuCategory[];
+    aiv: boolean;
 };
 
 export type KeyMap = {

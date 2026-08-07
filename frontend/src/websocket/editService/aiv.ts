@@ -2,8 +2,13 @@ import { getConfig, replaceDollars } from '../../util/util';
 import { sendEditRequest } from './send';
 import { withToast, type ToastOptions } from './toast';
 
-export async function reportToAivRaw(user: string, reason: string) {
+export async function reportToAivRaw(
+    user: string,
+    reason: string,
+    editSummary: string | undefined = undefined
+) {
     const summary =
+        editSummary ??
         getConfig()?.['testwiki']?.reportSummary ??
         'Reporting [[Special:Contributions/$1|$1]] (Fortress-Beta)';
     const res = await sendEditRequest({
