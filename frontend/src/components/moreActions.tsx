@@ -8,8 +8,8 @@ import {
 import type { RecentChange } from '../types/types';
 import ArrowSvg from '../assets/arrow.svg?react';
 import { useTranslation } from 'react-i18next';
-import { reportToEnwikiAIVWithToast } from '../websocket/sendingfuncs';
 import { Reporter } from './Reporter';
+import { reportToAiv } from '../websocket/editService/aiv';
 
 type ItemState = 'aiv' | 'uaa' | 'csd' | 'srg' | '';
 
@@ -111,5 +111,5 @@ function reportToAivFromComponent(
     additionalReason: string
 ) {
     const reason = `${selection}.${additionalReason ? ` ${additionalReason}` : ''}`;
-    reportToEnwikiAIVWithToast(user, reason);
+    reportToAiv(user, reason);
 }

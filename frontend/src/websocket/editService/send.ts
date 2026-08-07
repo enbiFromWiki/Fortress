@@ -1,5 +1,5 @@
 import { socket } from '../websocket';
-import type { WSEditRes } from './toast';
+import type { WSEditRes, WSQueryRes } from './toast';
 
 const pending = new Map();
 
@@ -20,6 +20,17 @@ socket.subscribe((e) => {
 export function sendEditRequest(
     data: Record<string, unknown>
 ): Promise<WSEditRes> {
+    const id = crypto.randomUUID();
+    socket.send(JSON.stringify({ id, ...data }));
+
+    return new Promise((resolve, reject) => {
+        pending.set(id, { resolve, reject });
+    });
+}
+
+export function sendQueryRequest(
+    data: Record<string, unknown>
+): Promise<WSQueryRes> {
     const id = crypto.randomUUID();
     socket.send(JSON.stringify({ id, ...data }));
 

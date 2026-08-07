@@ -35,7 +35,7 @@ export function Toolbar() {
         setMenu((i) => (i === 'rollback' ? '' : 'rollback'));
     }
     return (
-        <div className="z-10 **:z-10 left-[calc(2.8em+35vw)] right-[35vw] shadow-2xl border border-neutral-800 bottom-10 rounded-xl h-18 flex items-center bg-neutral-900 fixed p-1 gap-1">
+        <div className="z-10 **:z-10 left-[calc(2.8em+35vw)] right-[35vw] shadow border border-neutral-800 bottom-10 rounded-xl h-18 flex items-center bg-neutral-900 fixed p-1 gap-1">
             <div className="relative  h-full w-18">
                 <button
                     onClick={handleClick}

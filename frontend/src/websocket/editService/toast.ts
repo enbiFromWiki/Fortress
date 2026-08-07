@@ -8,6 +8,18 @@ export type WSEditRes = {
     part?: 'rollback' | 'warn';
 };
 
+export type WSAsyncRes = WSEditRes | WSQueryRes;
+
+export type WSQueryRes = {
+    status: 'error' | 'success';
+    error?: string;
+    responseto: 'warninglevel';
+    type: 'response';
+    id: string;
+    level?: number;
+    content?: string;
+};
+
 export type WSError = WSEditRes & {
     status: 'error' | 'alreadygone';
 };
