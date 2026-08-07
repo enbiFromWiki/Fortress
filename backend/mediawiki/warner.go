@@ -63,6 +63,18 @@ func (c *MediaWikiClient) SingleIssueWarn(user string, template string, tok stri
 	return Warned, err
 }
 
+func (c *MediaWikiClient) WarnUser(user string, content string, template string, domain string, title string, tok string, summary string) error {
+	newContent := ""
+	if title == "" {
+		newContent = ConstructNewTalk(template, content)
+	} else {
+		newContent = ConstructNewTalk(template, content, title)
+	}
+
+	err := c.Edit("User talk:"+user, domain, tok, newContent, summary, false, true)
+	return err
+}
+
 func (c *MediaWikiClient) AutoWarnUser(user string, template string, tok string, wiki string, title string, warnSummary string) (WarnResult, error) {
 	talkPage := "User talk:" + user
 	content, exists, err := c.GetSinglePageContent(talkPage, wiki)

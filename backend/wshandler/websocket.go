@@ -153,7 +153,7 @@ func (c *Client) readPump(mwclient *mediawiki.MediaWikiClient) {
 		_ = c.conn.Close()
 	}()
 
-	c.conn.SetReadLimit(1024)
+	c.conn.SetReadLimit(1024 * 1024 * 3)
 
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error {

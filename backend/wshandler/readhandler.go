@@ -22,6 +22,9 @@ type SentWSJSON struct {
 	WarnSummary  string  `json:"warnsummary"`
 	Filters      Filters `json:"filters"`
 	Reason       string  `json:"reason"`
+	Template     string  `json:"template"`
+	Content      *string `json:"content"`
+	Title        string  `json:"title"`
 }
 
 type RollbackTokenJSON struct {
@@ -263,6 +266,80 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 			"status": "success",
 			"id":     data.ID,
 		}
+	case "warninglevel":
+		{
+			if data.TargetWiki == "" || data.TargetUser == "" {
+				return
+			}
+			content, _, err := mwclient.GetSinglePageContent("User talk:"+data.TargetUser, data.TargetWiki)
+			if err != nil {
+				client.Send <- map[string]any{
+					"status": "error",
+					"id":     data.ID,
+					"type":   "response",
+
+					"error": err.Error(),
+				}
+			}
+
+			level := mediawiki.GetWarningLevel(content)
+
+			client.Send <- map[string]any{
+				"status":  "success",
+				"type":    "response",
+				"id":      data.ID,
+				"level":   level,
+				"content": content,
+			}
+		}
+	case "warn":
+		{
+			fmt.Println("WARNING")
+			if data.Template == "" || data.TargetWiki == "" || data.Summary == "" {
+				return
+			}
+			fmt.Println("WARNING")
+
+			if data.Content == nil && data.TargetUser == "" {
+				return
+			}
+
+			content := data.Content
+
+			if content == nil {
+				newContent, _, err := mwclient.GetSinglePageContent("User talk:"+data.TargetUser, data.TargetWiki)
+				content = &newContent
+				if err != nil {
+					client.Send <- map[string]any{
+						"id":     data.ID,
+						"status": "error",
+						"type":   "response",
+						"error":  err.Error(),
+					}
+					return
+				}
+			}
+
+			err := mwclient.WarnUser(data.TargetUser, *content, data.Template, data.TargetWiki, data.Title, client.token, data.Summary)
+			fmt.Println(err)
+			if err != nil {
+				client.Send <- map[string]any{
+					"id":     data.ID,
+					"status": "error",
+					"type":   "response",
+					"error":  err.Error(),
+				}
+				return
+			}
+
+			client.Send <- map[string]any{
+				"id":     data.ID,
+				"status": "success",
+				"type":   "response",
+			}
+		}
+	default:
+		fmt.Println("no case found")
 	}
 
 }
