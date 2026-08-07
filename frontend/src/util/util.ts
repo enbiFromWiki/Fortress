@@ -1,10 +1,8 @@
 import { useAuthStore, type KeyMap } from '../stores/authstore';
 import { useEditStore } from '../stores/editstore';
 import type { RecentChange } from '../types/types';
-import {
-    rollAndAutoWarnCurrentEdit,
-    rollbackAndToastCurrentEdit,
-} from '../websocket/sendingfuncs';
+import { rollbackCurrentEditNoWarn } from '../websocket/editService/rollback';
+import { rollAndAutoWarnCurrentEdit } from '../websocket/sendingfuncs';
 
 export async function fetchCred(
     input: RequestInfo | URL,
@@ -123,7 +121,8 @@ export function handleRollbackKeyMap(key: string) {
     if (keyMap.template) {
         rollAndAutoWarnCurrentEdit(summary, keyMap.template);
     } else {
-        rollbackAndToastCurrentEdit(summary);
+        console.log('ROLLBACK USE');
+        rollbackCurrentEditNoWarn(summary);
     }
 }
 

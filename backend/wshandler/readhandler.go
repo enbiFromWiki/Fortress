@@ -155,6 +155,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				client.Send <- map[string]any{
 					"type":   "response",
 					"id":     data.ID,
+					"part":   "rollback",
 					"status": "error",
 					"error":  err.Error(),
 				}
@@ -178,6 +179,7 @@ func handleIncomingMessage(client *Client, byteData []byte, mwclient *mediawiki.
 				client.Send <- map[string]any{
 					"type":   "response",
 					"id":     data.ID,
+					"part":   "rollback",
 					"status": "error",
 					"error":  err.Error(),
 				}

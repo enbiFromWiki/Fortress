@@ -17,7 +17,7 @@ import { type RBMenuCategory, type RBMenuWarning } from '../stores/authstore';
 import { handleRollbackKeyMap, replaceDollars } from '../util/util';
 import { useConfig } from '../hooks/useConfig';
 import type { RecentChange } from '../types/types';
-import { MoreActionsMenu } from './moreActions';
+import { MoreActionsMenu } from './MoreActions';
 
 export function Toolbar() {
     const [menu, setMenu] = useState<string>('');

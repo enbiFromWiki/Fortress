@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { useAuthStore } from '../stores/authstore';
 import { Navigate } from 'react-router';
-import { Loading } from './loading';
+import { Loading } from './Loading';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
     const auth = useAuthStore();

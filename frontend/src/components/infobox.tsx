@@ -6,7 +6,7 @@ import CommentSvg from '../assets/comment.svg?react';
 import { useTooltip } from '../hooks/useTooltip';
 import { calculateDiffColour } from '../util/util';
 import { useUserStore, type UserData } from '../stores/userstore';
-import { UserView } from './user';
+import { UserView } from './User';
 import { usePageStore } from '../stores/pagestore';
 
 export function Infobox() {

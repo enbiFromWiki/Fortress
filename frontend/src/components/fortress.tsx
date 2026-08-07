@@ -1,14 +1,14 @@
 import '../styles/grid.css';
-import { LeftSection } from './leftside';
-import { DiffViewer } from './diffviewer';
-import { TopBar } from './top';
+import { LeftSection } from './LeftSection';
+import { DiffViewer } from './DiffViewer';
+import { TopBar } from './TopBar';
 import { startWs } from '../websocket/wshandler';
 import { useEffect } from 'react';
 import { useEditStore } from '../stores/editstore';
-import { Bottom } from './bottom';
-import { Infobox } from './infobox';
-import { History } from './hist';
-import { Toolbar } from './toolbar';
+import { Bottom } from './Bottom';
+import { Infobox } from './Infobox';
+import { History } from './History';
+import { Toolbar } from './Toolbar';
 
 import {
     autoSetWatchedCurrentPage,
@@ -16,7 +16,7 @@ import {
 } from '../websocket/sendingfuncs';
 import { useSettingsStore } from '../stores/settingsstore';
 import { handleRollbackKeyMap } from '../util/util';
-import { Tooltip } from './tooltip';
+import { Tooltip } from './Tooltip';
 import { Settings } from './settings';
 import { Toast } from './toast';
 

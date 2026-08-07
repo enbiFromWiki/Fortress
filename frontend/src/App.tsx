@@ -2,15 +2,15 @@ import './App.css';
 import './i18n';
 import './styles/animations.css';
 import { Routes, Route, useNavigate } from 'react-router';
-import { Login } from './components/login';
+import { Login } from './components/Login';
 import { Home } from './home';
-import { Fortress } from './components/fortress';
+import { Fortress } from './components/Fortress';
 import { useEffect } from 'react';
 import { BadConfigError, useAuthStore } from './stores/authstore';
-import { ProtectedRoute } from './components/protectedroute';
-import { Forbidden } from './components/forbidden';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Forbidden } from './components/Forbidden';
 import { FourOhFour } from './components/404';
-import { BadConfig } from './components/badConfig';
+import { BadConfig } from './components/BadConfig';
 import { YAMLError, YAMLParseError } from 'yaml';
 
 function App() {

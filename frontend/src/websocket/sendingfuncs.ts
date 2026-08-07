@@ -5,19 +5,7 @@ import { useUserStore } from '../stores/userstore';
 import type { Filter } from '../types/types';
 import { getConfig, replaceDollars } from '../util/util';
 import { socket } from './websocket';
-
-const pending = new Map();
-
-export function sendEditRequest(
-    data: Record<string, unknown>
-): Promise<Record<string, unknown>> {
-    const id = crypto.randomUUID();
-    socket.send(JSON.stringify({ id, ...data }));
-
-    return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
-    });
-}
+import { sendEditRequest } from './editService/send';
 
 export async function rollbackAndAutoWarnCurrentEdit(
     summary: string,
@@ -111,20 +99,6 @@ export async function reportToEnwikiAIVWithToast(user: string, reason: string) {
     }
 }
 
-socket.subscribe((e) => {
-    const ms = JSON.parse(e.data);
-    if (ms.type !== 'response') return;
-    console.log(ms);
-    const req = pending.get(ms.id);
-    if (!req) return;
-    pending.delete(ms.id);
-    if (ms.status === 'success') {
-        req.resolve(ms);
-    } else {
-        req.reject(ms);
-    }
-});
-
 export async function rollbackCurrentEditWithEnglishSummary(
     reason: string | null = null
 ): Promise<Record<string, unknown> | null> {
@@ -159,7 +133,7 @@ export async function rollbackAndToastCurrentEdit(summary: string) {
         id,
     });
     try {
-        await rollbackCurrentEdit(summary);
+        await oldRollbackCurrentEdit(summary);
         updateToast(id, {
             header: 'Reverted!',
             body: 'Edits successfully reverted.',
@@ -195,7 +169,7 @@ export async function rollbackAndToastCurrentEdit(summary: string) {
     }
 }
 
-export async function rollbackCurrentEdit(
+export async function oldRollbackCurrentEdit(
     summary: string
 ): Promise<Record<string, unknown> | null> {
     const store = useEditStore.getState();
